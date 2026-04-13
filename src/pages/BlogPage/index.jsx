@@ -1,0 +1,39 @@
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import Seo from '@/components/common/Seo/index.jsx';
+import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
+import { fetchBlogPosts } from '@/services/api.js';
+import { queryKeys } from '@/services/queryKeys.js';
+
+const BlogPage = () => {
+  const { data: posts = [] } = useQuery({
+    queryKey: queryKeys.blogPosts,
+    queryFn: fetchBlogPosts
+  });
+
+  return (
+    <>
+      <Seo title="Блог | Lumina" />
+      <div className="container-shell py-8">
+        <Breadcrumbs items={[{ label: 'Главная', to: '/' }, { label: 'Блог' }]} />
+        <div className="mt-6">
+          <h1 className="section-title">Советы красоты</h1>
+          <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {posts.map((post) => (
+              <Link key={post.id} to={`/blog/${post.slug}`} className="overflow-hidden rounded-[2rem] bg-white shadow-card">
+                <img src={post.image} alt={post.title} className="h-72 w-full object-cover" />
+                <div className="p-6">
+                  <div className="text-sm uppercase tracking-[0.25em] text-roseBrown/70">{post.category}</div>
+                  <div className="mt-3 text-2xl font-semibold text-ink">{post.title}</div>
+                  <p className="mt-3 text-muted">{post.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default BlogPage;
