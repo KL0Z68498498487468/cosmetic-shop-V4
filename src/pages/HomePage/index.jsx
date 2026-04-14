@@ -9,7 +9,7 @@ import AnimatedSection from '@/components/ui/AnimatedSection/index.jsx';
 import Carousel from '@/components/ui/Carousel/index.jsx';
 import CountdownTimer from '@/components/ui/CountdownTimer/index.jsx';
 import SectionHeading from '@/components/ui/SectionHeading/index.jsx';
-import HeroSlider from '@/components/HeroSlider/HeroSlider.jsx';
+import HeroLookbook from '../../components/HeroSlider/HeroSlider';
 import { siteTexts } from '@/constants/texts.js';
 import useProducts from '@/hooks/useProducts.js';
 import { formatPrice } from '@/utils/formatPrice.js';
@@ -35,8 +35,11 @@ const HomePage = () => {
       />
 
       <div className="container-shell py-8 sm:py-10">
-        <AnimatedSection className="overflow-hidden rounded-[2.5rem] shadow-soft">
-  <HeroSlider
+        
+
+
+<AnimatedSection>
+  <HeroLookbook
     recommendations={recommendations}
     discounts={discounts}
     formatPrice={formatPrice}

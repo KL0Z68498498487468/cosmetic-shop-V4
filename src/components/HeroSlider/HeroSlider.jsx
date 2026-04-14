@@ -1,278 +1,382 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { FiTruck, FiGift, FiShield, FiArrowRight, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import Button from '../common/Button/index.jsx';
+import { FiArrowRight, FiTruck, FiGift, FiShield } from 'react-icons/fi';
 
-const slides = (siteTexts, recommendations, discounts, formatPrice) => [
-  // ─── Слайд 1: Главный ───────────────────────────────────────────
-  {
-    id: 'hero',
-    render: () => (
-      <div className="relative min-h-[560px] bg-hero-grid px-8 py-12 sm:px-12 sm:py-16">
-        <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div>
-            <div className="text-sm font-bold uppercase tracking-[0.35em] text-roseBrown/70">
-              {siteTexts.hero.overline}
+const INTERVAL = 5000;
+
+function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTexts }) {
+  const hero = siteTexts?.hero ?? {};
+  const cats = siteTexts?.categories ?? [];
+
+  return [
+    // ── Слайд 0: Главный ─────────────────────────────────────────
+    {
+      id: 'main',
+      accent: '#FF6B6B',
+      label: 'Новинки',
+      bg: 'from-[#fff5f0] to-[#ffe8e0]',
+      product: recommendations[0],
+      content: ({ accent, product }) => (
+        <div className={`relative flex h-full min-h-[420px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-[#fff5f0] to-[#ffe8e0]`}>
+          <Circle size={300} top="-60px" right="-60px" color="#FF6B6B" opacity={0.08} />
+          <Circle size={150} bottom="40px" left="30px" color="#FF6B6B" opacity={0.06} />
+
+          <div className="relative z-10 flex h-full flex-col justify-between p-6 sm:p-8 lg:grid lg:grid-cols-[1fr_320px] lg:items-center">
+            <div>
+              <Tag color={accent}>✦ {hero.overline ?? 'Новинки сезона'}</Tag>
+
+              <h1 className="mt-4 font-display text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-[#1a1a1a]">
+                {hero.title ?? (
+                  <>Beauty<br />Ритуалы</>
+                )}
+              </h1>
+
+              <p className="mt-4 max-w-sm text-sm leading-6 text-[#1a1a1a]/60">
+                {hero.description ?? 'Премиальная косметика и парфюмерия — только лучшее для вашей кожи.'}
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                <PillLink to="/catalog" bg="#1a1a1a" color="#fff">
+                  {hero.ctaPrimary ?? 'Смотреть каталог'} <FiArrowRight size={14} />
+                </PillLink>
+                <PillLink to="/blog" bg="transparent" color="#1a1a1a" border>
+                  {hero.ctaSecondary ?? 'Beauty-блог'}
+                </PillLink>
+              </div>
+
+              <div className="mt-8 grid gap-2 sm:grid-cols-3">
+                {[
+                  { icon: <FiTruck size={12} />, text: 'Доставка день в день' },
+                  { icon: <FiGift  size={12} />, text: 'Подарок от 400к сум' },
+                  { icon: <FiShield size={12} />, text: 'Оригинал 100%' },
+                ].map((b) => (
+                  <div key={b.text} className="flex items-center gap-2 rounded-xl bg-white/70 px-3 py-2 text-[11px] font-medium text-[#1a1a1a] backdrop-blur-sm">
+                    <span style={{ color: accent }}>{b.icon}</span>
+                    {b.text}
+                  </div>
+                ))}
+              </div>
             </div>
-            <h1 className="mt-5 font-display text-5xl leading-none text-ink sm:text-6xl">
-              {siteTexts.hero.title}
-            </h1>
-            <p className="mt-6 max-w-2xl text-base leading-7 text-roseBrown/85">
-              {siteTexts.hero.description}
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button as={Link} to="/catalog" size="lg">
-                {siteTexts.hero.ctaPrimary}
-              </Button>
-              <Button as={Link} to="/blog" variant="secondary" size="lg">
-                {siteTexts.hero.ctaSecondary}
-              </Button>
-            </div>
-            <div className="mt-10 grid gap-3 sm:grid-cols-3">
-              {[
-                { icon: <FiTruck />, text: 'Доставка день в день по Ташкенту' },
-                { icon: <FiGift />,  text: 'Подарок к заказам от 400 000 сум' },
-                { icon: <FiShield />, text: 'Только официальные поставки' },
-              ].map((item) => (
-                <div key={item.text} className="glass-panel rounded-[1.5rem] p-4 text-sm text-ink">
-                  <div className="mb-3 text-accent">{item.icon}</div>
-                  {item.text}
+
+            {product && (
+              <Link to={`/catalog/${product.slug}`}
+                className="group mt-8 block overflow-hidden rounded-2xl bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)] transition hover:-translate-y-1 lg:mt-0"
+              >
+                <div className="overflow-hidden">
+                  <img src={product.image} alt={product.name}
+                    className="h-48 w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
                 </div>
+                <div className="p-4 sm:p-5">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>{product.brand}</div>
+                  <div className="mt-1 text-base font-semibold text-[#1a1a1a]">{product.name}</div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-base font-bold text-[#1a1a1a]">{formatPrice(product.price)}</span>
+                    <span className="grid h-8 w-8 place-items-center rounded-full text-white transition group-hover:opacity-80"
+                      style={{ background: accent }}>
+                      <FiArrowRight size={14} />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            )}
+          </div>
+        </div>
+      ),
+    },
+
+    // ── Слайд 1: Акции ───────────────────────────────────────────
+    {
+      id: 'promo',
+      accent: '#FFD93D',
+      label: 'Скидки',
+      bg: 'from-[#1a1a1a] to-[#2d1f00]',
+      product: discounts[0],
+      content: ({ accent }) => (
+        <div className="relative flex min-h-[420px] flex-col overflow-hidden rounded-3xl bg-[#1a1a1a]">
+          <Circle size={350} top="-80px" right="-80px" color={accent} opacity={0.07} />
+          <Circle size={180} bottom="-40px" left="10%" color={accent} opacity={0.05} />
+
+          <div className="absolute top-0 left-0 right-0 h-1 rounded-t-3xl" style={{ background: accent }} />
+
+          <div className="relative z-10 flex h-full flex-col justify-between p-6 sm:p-8 lg:grid lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-8">
+            <div>
+              <Tag color={accent} dark>🔥 Горячие скидки</Tag>
+
+              <h2 className="mt-4 font-display text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-white">
+                До<br />
+                <span style={{ color: accent }}>−30%</span><br />
+                на уход
+              </h2>
+
+              <p className="mt-4 max-w-sm text-sm leading-6 text-white/50">
+                Финальные часы весенней акции. Успейте забрать бестселлеры по лучшей цене.
+              </p>
+
+              <PillLink to="/catalog" bg={accent} color="#1a1a1a" className="mt-6">
+                Смотреть акции <FiArrowRight size={14} />
+              </PillLink>
+            </div>
+
+            <div className="mt-8 grid grid-cols-2 gap-2.5 lg:mt-0">
+              {discounts.slice(0, 4).map((p) => {
+                const disc = Math.round((1 - p.price / p.oldPrice) * 100);
+                return (
+                  <Link key={p.id} to={`/catalog/${p.slug}`}
+                    className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm transition hover:border-white/20 hover:bg-white/10"
+                  >
+                    <div className="absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-black text-[#1a1a1a]"
+                      style={{ background: accent }}>
+                      −{disc}%
+                    </div>
+                    <div className="text-[9px] uppercase tracking-widest text-white/40">{p.brand}</div>
+                    <div className="mt-1 text-xs font-semibold leading-snug text-white line-clamp-2">{p.name}</div>
+                    <div className="mt-2 flex flex-col items-start gap-0.5 sm:flex-row sm:items-end sm:gap-2">
+                      <span className="text-sm font-bold text-white">{formatPrice(p.price)}</span>
+                      <span className="text-[10px] text-white/30 line-through">{formatPrice(p.oldPrice)}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+
+    // ── Слайд 2: Рекомендации ────────────────────────────────────
+    {
+      id: 'picks',
+      accent: '#6BCB77',
+      label: 'Хиты',
+      bg: 'from-[#f0fff4] to-[#e0f5e9]',
+      content: ({ accent }) => (
+        <div className="relative flex min-h-[420px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-[#f0fff4] to-[#e0f5e9]">
+          <Circle size={280} top="-50px" right="-50px" color={accent} opacity={0.15} />
+
+          <div className="relative z-10 p-6 sm:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <Tag color={accent}>✦ Персонально для вас</Tag>
+                <h2 className="mt-4 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[0.95] text-[#1a1a1a]">
+                  Хиты с высоким рейтингом
+                </h2>
+                <p className="mt-2 max-w-sm text-sm text-[#1a1a1a]/55">
+                  Покупают снова и снова — проверено клиентами.
+                </p>
+              </div>
+              <PillLink to="/catalog" bg={accent} color="#1a1a1a" className="mt-1 hidden shrink-0 sm:flex">
+                Все товары <FiArrowRight size={14} />
+              </PillLink>
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {recommendations.slice(0, 4).map((p, i) => (
+                <Link key={p.id} to={`/catalog/${p.slug}`}
+                  className="group overflow-hidden rounded-xl bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] transition hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
+                  style={{ transitionDelay: `${i * 40}ms` }}
+                >
+                  <div className="overflow-hidden">
+                    <img src={p.image} alt={p.name}
+                      className="h-32 w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-3">
+                    <div className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>{p.brand}</div>
+                    <div className="mt-1 text-xs font-semibold text-[#1a1a1a] leading-snug line-clamp-2">{p.name}</div>
+                    <div className="mt-1.5 text-sm font-bold text-[#1a1a1a]">{formatPrice(p.price)}</div>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>
-          <div className="hidden lg:grid gap-4 sm:grid-cols-2">
-            {recommendations.slice(0, 2).map((product, index) => (
-              <div
-                key={product.id}
-                className={`rounded-[2rem] bg-white/80 p-4 shadow-card ${index === 0 ? 'translate-y-8' : ''}`}
-              >
-                <img src={product.image} alt={product.name} className="h-56 w-full rounded-[1.5rem] object-cover" />
-                <div className="mt-4 text-sm uppercase tracking-[0.25em] text-roseBrown/70">{product.brand}</div>
-                <div className="mt-2 text-xl font-semibold text-ink">{product.name}</div>
-                <div className="mt-2 text-sm text-roseBrown/75">{formatPrice(product.price)}</div>
-              </div>
-            ))}
-          </div>
         </div>
-      </div>
-    ),
-  },
+      ),
+    },
 
-  // ─── Слайд 2: Акция ─────────────────────────────────────────────
-  {
-    id: 'promo',
-    render: () => (
-      <div className="relative min-h-[560px] bg-gradient-to-br from-ink via-[#2f1d25] to-[#402733] px-8 py-12 sm:px-12 sm:py-16 flex items-center">
-        {/* декоративные круги */}
-        <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-accent/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 left-1/3 h-64 w-64 rounded-full bg-roseBrown/20 blur-2xl" />
+    // ── Слайд 3: Категории ───────────────────────────────────────
+    {
+      id: 'cats',
+      accent: '#A78BFA',
+      label: 'Разделы',
+      content: ({ accent }) => (
+        <div className="relative flex min-h-[420px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-[#f5f0ff] to-[#ede8ff]">
+          <Circle size={300} top="-80px" left="-60px" color={accent} opacity={0.1} />
+          <Circle size={150} bottom="0" right="5%" color={accent} opacity={0.08} />
 
-        <div className="relative z-10 w-full grid gap-10 lg:grid-cols-2 lg:items-center">
-          <div className="text-white">
-            <div className="inline-block rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.3em] text-white/80">
-              🔥 Горячие скидки
+          <div className="relative z-10 p-6 sm:p-8">
+            <Tag color={accent}>✦ Маршрут по beauty-задачам</Tag>
+
+            <div className="mt-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+              <h2 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[0.95] text-[#1a1a1a]">
+                Быстро найти<br />нужное
+              </h2>
+              <p className="max-w-xs text-sm leading-6 text-[#1a1a1a]/55 lg:text-right">
+                Три направления — переходите прямо к нужному ассортименту.
+              </p>
             </div>
-            <h2 className="mt-5 font-display text-5xl leading-none sm:text-6xl">
-              До&nbsp;<span className="text-accent">−30%</span><br />на уход<br />и макияж
-            </h2>
-            <p className="mt-5 max-w-sm text-sm leading-6 text-white/70">
-              Финальные часы весенней акции. Успейте забрать бестселлеры по лучшей цене.
-            </p>
-            <Button as={Link} to="/catalog" size="lg" className="mt-8">
-              Смотреть акции <FiArrowRight />
-            </Button>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {discounts.map((product) => (
-              <div key={product.id} className="rounded-[2rem] bg-white/10 p-5 backdrop-blur-sm border border-white/10">
-                <div className="text-xs text-white/50 uppercase tracking-widest">{product.brand}</div>
-                <div className="mt-2 text-lg font-semibold text-white leading-snug">{product.name}</div>
-                <div className="mt-4 flex items-end gap-3">
-                  <div className="text-xl font-bold text-white">{formatPrice(product.price)}</div>
-                  <div className="pb-0.5 text-sm text-white/40 line-through">{formatPrice(product.oldPrice)}</div>
-                </div>
-                <div className="mt-3 inline-block rounded-full bg-accent/80 px-3 py-1 text-xs font-bold text-white">
-                  −{Math.round((1 - product.price / product.oldPrice) * 100)}%
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    ),
-  },
-
-  // ─── Слайд 3: Персональные рекомендации ─────────────────────────
-  {
-    id: 'picks',
-    render: () => (
-      <div className="relative min-h-[560px] bg-[#fdf6f0] px-8 py-12 sm:px-12 sm:py-16 flex items-center">
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-mist/60 to-transparent" />
-        <div className="relative z-10 w-full">
-          <div className="text-sm font-bold uppercase tracking-[0.35em] text-roseBrown/60">
-            ✦ Персонально для вас
-          </div>
-          <h2 className="mt-4 font-display text-5xl leading-none text-ink sm:text-6xl">
-            Хиты с высоким<br />рейтингом
-          </h2>
-          <p className="mt-5 max-w-md text-base text-roseBrown/75">
-            Продукты, которые покупают снова и снова — проверено нашими клиентами.
-          </p>
-          <div className="mt-10 grid grid-cols-2 gap-5 sm:grid-cols-4">
-            {recommendations.slice(0, 4).map((product) => (
-              <Link key={product.id} to={`/product/${product.id}`} className="group block">
-                <div className="overflow-hidden rounded-[1.8rem] bg-white shadow-card transition duration-300 group-hover:-translate-y-1 group-hover:shadow-soft">
-                  <img src={product.image} alt={product.name} className="h-44 w-full object-cover transition duration-500 group-hover:scale-105" />
-                  <div className="p-4">
-                    <div className="text-xs uppercase tracking-widest text-roseBrown/60">{product.brand}</div>
-                    <div className="mt-1 text-sm font-semibold text-ink leading-snug">{product.name}</div>
-                    <div className="mt-2 text-sm font-bold text-accent">{formatPrice(product.price)}</div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {cats.map((cat, i) => (
+                <Link key={cat.slug} to={`/catalog?category=${cat.slug}`}
+                  className="group relative overflow-hidden rounded-2xl bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] transition hover:-translate-y-1"
+                >
+                  <div className="overflow-hidden">
+                    <img src={cat.image} alt={cat.title}
+                      className="h-36 w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-    ),
-  },
-
-  // ─── Слайд 4: Категории / «Маршрут» ─────────────────────────────
-  {
-    id: 'categories',
-    render: () => (
-      <div className="relative min-h-[560px] bg-gradient-to-br from-mint/40 via-white to-mist px-8 py-12 sm:px-12 sm:py-16 flex items-center">
-        <div className="w-full">
-          <div className="text-sm font-bold uppercase tracking-[0.35em] text-roseBrown/60">
-            ✦ Категории
-          </div>
-          <h2 className="mt-4 font-display text-5xl leading-none text-ink sm:text-6xl">
-            Маршрут по<br />beauty-задачам
-          </h2>
-          <p className="mt-5 max-w-md text-base text-roseBrown/75">
-            Три направления — быстрый переход к нужному ассортименту.
-          </p>
-          <div className="mt-10 grid gap-5 sm:grid-cols-3">
-            {siteTexts.categories.map((category, index) => (
-              <Link
-                key={category.slug}
-                to={`/catalog?category=${category.slug}`}
-                className={`group relative overflow-hidden rounded-[2rem] p-5 shadow-card transition hover:-translate-y-1 ${
-                  index === 1 ? 'bg-mist' : index === 2 ? 'bg-mint' : 'bg-white'
-                }`}
-              >
-                <img
-                  src={category.image}
-                  alt={category.title}
-                  className="h-52 w-full rounded-[1.6rem] object-cover transition duration-500 group-hover:scale-105"
-                />
-                <div className="mt-4 flex items-center justify-between">
-                  <div>
-                    <div className="text-xl font-semibold text-ink">{category.title}</div>
-                    <div className="mt-1 text-sm text-roseBrown/70">{category.description}</div>
+                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#1a1a1a]/70 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4">
+                    <div>
+                      <div className="text-base font-bold text-white">{cat.title}</div>
+                      <div className="text-[11px] text-white/70 line-clamp-1">{cat.description}</div>
+                    </div>
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[#1a1a1a] transition group-hover:scale-110"
+                      style={{ background: accent }}>
+                      <FiArrowRight size={12} />
+                    </span>
                   </div>
-                  <span className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-white shadow-sm">
-                    <FiArrowRight size={16} />
-                  </span>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    ),
-  },
-];
+      ),
+    },
+  ];
+}
 
-// ── Dot indicator ────────────────────────────────────────────────────
-function Dot({ active, onClick }) {
+// ─── Атомарные компоненты ─────────────────────────────────────────────
+function Tag({ color, dark, children }) {
   return (
-    <button
-      onClick={onClick}
-      className={`transition-all duration-300 rounded-full ${
-        active ? 'w-6 h-2.5 bg-ink' : 'w-2.5 h-2.5 bg-ink/25 hover:bg-ink/50'
-      }`}
+    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]"
+      style={{
+        background: `${color}20`,
+        color: dark ? color : color,
+        border: `1px solid ${color}40`,
+      }}>
+      {children}
+    </span>
+  );
+}
+
+function PillLink({ to, bg, color, border, children, className = '' }) {
+  return (
+    <Link to={to}
+      className={`inline-flex h-10 items-center gap-2 rounded-full px-5 text-xs font-bold transition hover:opacity-80 ${className}`}
+      style={{
+        background: bg,
+        color,
+        border: border ? `1.5px solid ${color}30` : 'none',
+      }}>
+      {children}
+    </Link>
+  );
+}
+
+function Circle({ size, top, bottom, left, right, color, opacity }) {
+  return (
+    <div className="pointer-events-none absolute rounded-full"
+      style={{
+        width: size, height: size,
+        top, bottom, left, right,
+        background: color,
+        opacity,
+        filter: 'blur(40px)',
+      }}
     />
   );
 }
 
-// ── Главный компонент ────────────────────────────────────────────────
-export default function HeroSlider({ recommendations, discounts, formatPrice, siteTexts }) {
-  const [current, setCurrent] = useState(0);
-  const [animating, setAnimating] = useState(false);
-  const [direction, setDirection] = useState('next'); // 'next' | 'prev'
-  const allSlides = slides(siteTexts, recommendations, discounts, formatPrice);
+// ─── Главный компонент ────────────────────────────────────────────────
+export default function HeroLookbook({ recommendations = [], discounts = [], formatPrice, siteTexts }) {
+  const [active, setActive] = useState(0);
+  const [fading, setFading] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const pendingRef = useRef(null);
 
-  const go = useCallback(
-    (index, dir = 'next') => {
-      if (animating || index === current) return;
-      setDirection(dir);
-      setAnimating(true);
-      setTimeout(() => {
-        setCurrent(index);
-        setAnimating(false);
-      }, 400);
-    },
-    [animating, current]
-  );
+  const slides = buildSlides({ recommendations, discounts, formatPrice, siteTexts });
 
-  const prev = () => go((current - 1 + allSlides.length) % allSlides.length, 'prev');
-  const next = useCallback(() => go((current + 1) % allSlides.length, 'next'), [current, go, allSlides.length]);
+  const goTo = useCallback((next) => {
+    if (next === active || fading) return;
+    setFading(true);
+    pendingRef.current = next;
+    setTimeout(() => {
+      setActive(next);
+      setFading(false);
+    }, 380);
+  }, [active, fading]);
 
-  // автоплей каждые 6 секунд
+  const goNext = useCallback(() => goTo((active + 1) % slides.length), [active, goTo, slides.length]);
+
   useEffect(() => {
-    const id = setInterval(next, 6000);
-    return () => clearInterval(id);
-  }, [next]);
+    if (paused) return;
+    const t = setTimeout(goNext, INTERVAL);
+    return () => clearTimeout(t);
+  }, [active, paused, goNext]);
 
-  const translateClass =
-    animating
-      ? direction === 'next'
-        ? '-translate-x-8 opacity-0'
-        : 'translate-x-8 opacity-0'
-      : 'translate-x-0 opacity-100';
+  const current = slides[active];
 
   return (
-    <div className="relative overflow-hidden rounded-[2.5rem]">
-      {/* Слайд */}
-      <div className={`transition-all duration-400 ease-out ${translateClass}`}>
-        {allSlides[current].render()}
+    <div
+      className="relative"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div
+        style={{
+          opacity: fading ? 0 : 1,
+          transform: fading ? 'scale(0.985)' : 'scale(1)',
+          transition: 'opacity 0.38s ease, transform 0.38s ease',
+        }}
+      >
+        {current.content({ accent: current.accent, product: current.product })}
       </div>
 
-      {/* Прогресс-бар */}
-      <div className="absolute top-0 left-0 h-1 w-full bg-black/10">
-        <div
-          key={current}
-          className="h-full bg-accent/70 rounded-r-full"
-          style={{ animation: 'progress 6s linear forwards' }}
-        />
-      </div>
+      <div className="mt-3 flex items-stretch gap-2.5">
+        {slides.map((s, i) => {
+          const isActive = i === active;
+          return (
+            <button
+              key={s.id}
+              onClick={() => goTo(i)}
+              className="group relative flex flex-1 flex-col items-start overflow-hidden rounded-xl px-4 py-2.5 text-left transition-all"
+              style={{
+                background: isActive ? s.accent : '#f5f5f5',
+                transform: isActive ? 'translateY(-1px)' : 'translateY(0)',
+                boxShadow: isActive ? `0 4px 12px ${s.accent}40` : 'none',
+              }}
+            >
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-black/10">
+                  <div
+                    key={active}
+                    className="h-full bg-black/20 rounded-r-full"
+                    style={{ animation: paused ? 'none' : `lb-progress ${INTERVAL}ms linear forwards` }}
+                  />
+                </div>
+              )}
 
-      {/* Стрелки */}
-      <button
-        onClick={prev}
-        className="absolute left-4 top-1/2 z-20 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-white/80 shadow-card backdrop-blur-sm transition hover:bg-white hover:scale-105"
-      >
-        <FiChevronLeft size={20} />
-      </button>
-      <button
-        onClick={() => go((current + 1) % allSlides.length, 'next')}
-        className="absolute right-4 top-1/2 z-20 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-white/80 shadow-card backdrop-blur-sm transition hover:bg-white hover:scale-105"
-      >
-        <FiChevronRight size={20} />
-      </button>
-
-      {/* Точки */}
-      <div className="absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
-        {allSlides.map((s, i) => (
-          <Dot key={s.id} active={i === current} onClick={() => go(i, i > current ? 'next' : 'prev')} />
-        ))}
+              <span
+                className="text-[10px] font-black uppercase tracking-[0.2em]"
+                style={{ color: isActive ? '#fff' : '#999' }}
+              >
+                0{i + 1}
+              </span>
+              <span
+                className="mt-0.5 text-xs font-bold sm:text-sm"
+                style={{ color: isActive ? '#fff' : '#1a1a1a' }}
+              >
+                {s.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <style>{`
-        @keyframes progress {
+        @keyframes lb-progress {
           from { width: 0% }
           to   { width: 100% }
         }
