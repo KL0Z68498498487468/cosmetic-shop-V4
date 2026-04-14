@@ -9,6 +9,7 @@ import AnimatedSection from '@/components/ui/AnimatedSection/index.jsx';
 import Carousel from '@/components/ui/Carousel/index.jsx';
 import CountdownTimer from '@/components/ui/CountdownTimer/index.jsx';
 import SectionHeading from '@/components/ui/SectionHeading/index.jsx';
+import HeroSlider from '@/components/HeroSlider/HeroSlider.jsx';
 import { siteTexts } from '@/constants/texts.js';
 import useProducts from '@/hooks/useProducts.js';
 import { formatPrice } from '@/utils/formatPrice.js';
@@ -34,61 +35,14 @@ const HomePage = () => {
       />
 
       <div className="container-shell py-8 sm:py-10">
-        <AnimatedSection className="overflow-hidden rounded-[2.5rem] bg-hero-grid p-8 shadow-soft sm:p-12">
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-            <div>
-              <div className="text-sm font-bold uppercase tracking-[0.35em] text-roseBrown/70">
-                {siteTexts.hero.overline}
-              </div>
-              <h1 className="mt-5 font-display text-5xl leading-none text-ink sm:text-6xl">
-                {siteTexts.hero.title}
-              </h1>
-              <p className="mt-6 max-w-2xl text-base leading-7 text-roseBrown/85">
-                {siteTexts.hero.description}
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button as={Link} to="/catalog" size="lg">
-                  {siteTexts.hero.ctaPrimary}
-                </Button>
-                <Button as={Link} to="/blog" variant="secondary" size="lg">
-                  {siteTexts.hero.ctaSecondary}
-                </Button>
-              </div>
-              <div className="mt-10 grid gap-3 sm:grid-cols-3">
-                {[
-                  { icon: <FiTruck />, text: 'Доставка день в день по Ташкенту' },
-                  { icon: <FiGift />, text: 'Подарок к заказам от 400 000 сум' },
-                  { icon: <FiShield />, text: 'Только официальные поставки' }
-                ].map((item) => (
-                  <div key={item.text} className="glass-panel rounded-[1.5rem] p-4 text-sm text-ink">
-                    <div className="mb-3 text-accent">{item.icon}</div>
-                    {item.text}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {recommendations.slice(0, 2).map((product, index) => (
-                <div
-                  key={product.id}
-                  className={`rounded-[2rem] bg-white/80 p-4 shadow-card ${index === 0 ? 'sm:translate-y-8' : ''}`}
-                >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-64 w-full rounded-[1.5rem] object-cover"
-                  />
-                  <div className="mt-4 text-sm uppercase tracking-[0.25em] text-roseBrown/70">
-                    {product.brand}
-                  </div>
-                  <div className="mt-2 text-xl font-semibold text-ink">{product.name}</div>
-                  <div className="mt-2 text-sm text-roseBrown/75">{formatPrice(product.price)}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </AnimatedSection>
+        <AnimatedSection className="overflow-hidden rounded-[2.5rem] shadow-soft">
+  <HeroSlider
+    recommendations={recommendations}
+    discounts={discounts}
+    formatPrice={formatPrice}
+    siteTexts={siteTexts}
+  />
+</AnimatedSection>
 
         <div className="mt-20 space-y-20">
           <AnimatedSection>
