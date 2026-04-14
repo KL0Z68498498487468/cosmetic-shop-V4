@@ -25,14 +25,14 @@ const App = () => {
       <Seo />
       <Suspense
         fallback={
-          <div className="min-h-screen bg-pearl px-4 py-20">
+          <div className="min-h-screen bg-pearl px-4 py-20 dark:bg-slate-950">
             <AnimatedSection className="container-shell">
-              <div className="h-12 w-48 rounded-full bg-blush/70" />
+              <div className="h-12 w-48 rounded-full bg-blush/70 dark:bg-slate-800" />
               <div className="mt-10 grid gap-6 md:grid-cols-3">
                 {[...Array(6)].map((_, index) => (
                   <div
                     key={index}
-                    className="h-80 rounded-[2rem] bg-gradient-to-r from-white via-blush/50 to-white bg-[length:200%_100%] shadow-card animate-shimmer"
+                    className="h-80 rounded-[2rem] bg-gradient-to-r from-white via-blush/50 to-white bg-[length:200%_100%] shadow-card animate-shimmer dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
                   />
                 ))}
               </div>

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiTruck, FiGift, FiShield } from 'react-icons/fi';
+import { useThemeStore } from '@/store/themeStore.js';
 
 const INTERVAL = 5000;
 
-function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTexts }) {
+function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTexts, isDark }) {
   const hero = siteTexts?.hero ?? {};
   const cats = siteTexts?.categories ?? [];
 
@@ -17,7 +18,11 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
       bg: 'from-[#fff5f0] to-[#ffe8e0]',
       product: recommendations[0],
       content: ({ accent, product }) => (
-        <div className={`relative flex h-full min-h-[420px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-[#fff5f0] to-[#ffe8e0]`}>
+        <div
+          className={`relative flex h-full min-h-[360px] flex-col overflow-hidden rounded-3xl sm:min-h-[420px] ${
+            isDark ? 'bg-gradient-to-br from-slate-900 to-slate-800' : 'bg-gradient-to-br from-[#fff5f0] to-[#ffe8e0]'
+          }`}
+        >
           <Circle size={300} top="-60px" right="-60px" color="#FF6B6B" opacity={0.08} />
           <Circle size={150} bottom="40px" left="30px" color="#FF6B6B" opacity={0.06} />
 
@@ -25,13 +30,13 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
             <div>
               <Tag color={accent}>✦ {hero.overline ?? 'Новинки сезона'}</Tag>
 
-              <h1 className="mt-4 font-display text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-[#1a1a1a]">
+              <h1 className={`mt-4 font-display text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>
                 {hero.title ?? (
                   <>Beauty<br />Ритуалы</>
                 )}
               </h1>
 
-              <p className="mt-4 max-w-sm text-sm leading-6 text-[#1a1a1a]/60">
+              <p className={`mt-4 max-w-sm text-sm leading-6 ${isDark ? 'text-slate-300/80' : 'text-[#1a1a1a]/60'}`}>
                 {hero.description ?? 'Премиальная косметика и парфюмерия — только лучшее для вашей кожи.'}
               </p>
 
@@ -50,7 +55,12 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
                   { icon: <FiGift  size={12} />, text: 'Подарок от 400к сум' },
                   { icon: <FiShield size={12} />, text: 'Оригинал 100%' },
                 ].map((b) => (
-                  <div key={b.text} className="flex items-center gap-2 rounded-xl bg-white/70 px-3 py-2 text-[11px] font-medium text-[#1a1a1a] backdrop-blur-sm">
+                  <div
+                    key={b.text}
+                    className={`flex items-center gap-2 rounded-xl px-3 py-2 text-[11px] font-medium backdrop-blur-sm ${
+                      isDark ? 'bg-slate-900/70 text-slate-100' : 'bg-white/70 text-[#1a1a1a]'
+                    }`}
+                  >
                     <span style={{ color: accent }}>{b.icon}</span>
                     {b.text}
                   </div>
@@ -60,7 +70,9 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
 
             {product && (
               <Link to={`/catalog/${product.slug}`}
-                className="group mt-8 block overflow-hidden rounded-2xl bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)] transition hover:-translate-y-1 lg:mt-0"
+                className={`group mt-8 block overflow-hidden rounded-2xl transition hover:-translate-y-1 lg:mt-0 ${
+                  isDark ? 'bg-slate-900 shadow-[0_10px_30px_rgba(2,6,23,0.45)]' : 'bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]'
+                }`}
               >
                 <div className="overflow-hidden">
                   <img src={product.image} alt={product.name}
@@ -69,9 +81,9 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
                 </div>
                 <div className="p-4 sm:p-5">
                   <div className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>{product.brand}</div>
-                  <div className="mt-1 text-base font-semibold text-[#1a1a1a]">{product.name}</div>
+                  <div className={`mt-1 text-base font-semibold ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>{product.name}</div>
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="text-base font-bold text-[#1a1a1a]">{formatPrice(product.price)}</span>
+                    <span className={`text-base font-bold ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>{formatPrice(product.price)}</span>
                     <span className="grid h-8 w-8 place-items-center rounded-full text-white transition group-hover:opacity-80"
                       style={{ background: accent }}>
                       <FiArrowRight size={14} />
@@ -93,7 +105,7 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
       bg: 'from-[#1a1a1a] to-[#2d1f00]',
       product: discounts[0],
       content: ({ accent }) => (
-        <div className="relative flex min-h-[420px] flex-col overflow-hidden rounded-3xl bg-[#1a1a1a]">
+        <div className="relative flex min-h-[360px] flex-col overflow-hidden rounded-3xl bg-[#1a1a1a] sm:min-h-[420px]">
           <Circle size={350} top="-80px" right="-80px" color={accent} opacity={0.07} />
           <Circle size={180} bottom="-40px" left="10%" color={accent} opacity={0.05} />
 
@@ -151,17 +163,21 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
       label: 'Хиты',
       bg: 'from-[#f0fff4] to-[#e0f5e9]',
       content: ({ accent }) => (
-        <div className="relative flex min-h-[420px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-[#f0fff4] to-[#e0f5e9]">
+        <div
+          className={`relative flex min-h-[360px] flex-col overflow-hidden rounded-3xl sm:min-h-[420px] ${
+            isDark ? 'bg-gradient-to-br from-slate-900 to-slate-800' : 'bg-gradient-to-br from-[#f0fff4] to-[#e0f5e9]'
+          }`}
+        >
           <Circle size={280} top="-50px" right="-50px" color={accent} opacity={0.15} />
 
           <div className="relative z-10 p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <Tag color={accent}>✦ Персонально для вас</Tag>
-                <h2 className="mt-4 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[0.95] text-[#1a1a1a]">
+                <h2 className={`mt-4 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[0.95] ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>
                   Хиты с высоким рейтингом
                 </h2>
-                <p className="mt-2 max-w-sm text-sm text-[#1a1a1a]/55">
+                <p className={`mt-2 max-w-sm text-sm ${isDark ? 'text-slate-300/80' : 'text-[#1a1a1a]/55'}`}>
                   Покупают снова и снова — проверено клиентами.
                 </p>
               </div>
@@ -173,7 +189,11 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {recommendations.slice(0, 4).map((p, i) => (
                 <Link key={p.id} to={`/catalog/${p.slug}`}
-                  className="group overflow-hidden rounded-xl bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] transition hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
+                  className={`group overflow-hidden rounded-xl transition hover:-translate-y-1 ${
+                    isDark
+                      ? 'bg-slate-900 shadow-[0_4px_14px_rgba(2,6,23,0.4)] hover:shadow-[0_8px_22px_rgba(2,6,23,0.55)]'
+                      : 'bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]'
+                  }`}
                   style={{ transitionDelay: `${i * 40}ms` }}
                 >
                   <div className="overflow-hidden">
@@ -183,8 +203,8 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
                   </div>
                   <div className="p-3">
                     <div className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>{p.brand}</div>
-                    <div className="mt-1 text-xs font-semibold text-[#1a1a1a] leading-snug line-clamp-2">{p.name}</div>
-                    <div className="mt-1.5 text-sm font-bold text-[#1a1a1a]">{formatPrice(p.price)}</div>
+                    <div className={`mt-1 text-xs font-semibold leading-snug line-clamp-2 ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>{p.name}</div>
+                    <div className={`mt-1.5 text-sm font-bold ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>{formatPrice(p.price)}</div>
                   </div>
                 </Link>
               ))}
@@ -200,7 +220,11 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
       accent: '#A78BFA',
       label: 'Разделы',
       content: ({ accent }) => (
-        <div className="relative flex min-h-[420px] flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-[#f5f0ff] to-[#ede8ff]">
+        <div
+          className={`relative flex min-h-[360px] flex-col overflow-hidden rounded-3xl sm:min-h-[420px] ${
+            isDark ? 'bg-gradient-to-br from-slate-900 to-slate-800' : 'bg-gradient-to-br from-[#f5f0ff] to-[#ede8ff]'
+          }`}
+        >
           <Circle size={300} top="-80px" left="-60px" color={accent} opacity={0.1} />
           <Circle size={150} bottom="0" right="5%" color={accent} opacity={0.08} />
 
@@ -208,10 +232,10 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
             <Tag color={accent}>✦ Маршрут по beauty-задачам</Tag>
 
             <div className="mt-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-              <h2 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[0.95] text-[#1a1a1a]">
+              <h2 className={`font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[0.95] ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>
                 Быстро найти<br />нужное
               </h2>
-              <p className="max-w-xs text-sm leading-6 text-[#1a1a1a]/55 lg:text-right">
+              <p className={`max-w-xs text-sm leading-6 lg:text-right ${isDark ? 'text-slate-300/80' : 'text-[#1a1a1a]/55'}`}>
                 Три направления — переходите прямо к нужному ассортименту.
               </p>
             </div>
@@ -219,7 +243,9 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               {cats.map((cat, i) => (
                 <Link key={cat.slug} to={`/catalog?category=${cat.slug}`}
-                  className="group relative overflow-hidden rounded-2xl bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] transition hover:-translate-y-1"
+                  className={`group relative overflow-hidden rounded-2xl transition hover:-translate-y-1 ${
+                    isDark ? 'bg-slate-900 shadow-[0_4px_14px_rgba(2,6,23,0.4)]' : 'bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
+                  }`}
                 >
                   <div className="overflow-hidden">
                     <img src={cat.image} alt={cat.title}
@@ -291,12 +317,13 @@ function Circle({ size, top, bottom, left, right, color, opacity }) {
 
 // ─── Главный компонент ────────────────────────────────────────────────
 export default function HeroLookbook({ recommendations = [], discounts = [], formatPrice, siteTexts }) {
+  const isDark = useThemeStore((state) => state.isDark);
   const [active, setActive] = useState(0);
   const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
   const pendingRef = useRef(null);
 
-  const slides = buildSlides({ recommendations, discounts, formatPrice, siteTexts });
+  const slides = buildSlides({ recommendations, discounts, formatPrice, siteTexts, isDark });
 
   const goTo = useCallback((next) => {
     if (next === active || fading) return;
@@ -320,7 +347,7 @@ export default function HeroLookbook({ recommendations = [], discounts = [], for
 
   return (
     <div
-      className="relative"
+      className="relative dark:[color-scheme:dark]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -334,16 +361,16 @@ export default function HeroLookbook({ recommendations = [], discounts = [], for
         {current.content({ accent: current.accent, product: current.product })}
       </div>
 
-      <div className="mt-3 flex items-stretch gap-2.5">
+      <div className="mt-3 flex items-stretch gap-2.5 overflow-x-auto pb-1">
         {slides.map((s, i) => {
           const isActive = i === active;
           return (
             <button
               key={s.id}
               onClick={() => goTo(i)}
-              className="group relative flex flex-1 flex-col items-start overflow-hidden rounded-xl px-4 py-2.5 text-left transition-all"
+              className="group relative flex min-w-[104px] flex-none flex-col items-start overflow-hidden rounded-xl px-3 py-2.5 text-left transition-all sm:min-w-0 sm:flex-1 sm:px-4"
               style={{
-                background: isActive ? s.accent : '#f5f5f5',
+                background: isActive ? s.accent : isDark ? '#1f2937' : '#f5f5f5',
                 transform: isActive ? 'translateY(-1px)' : 'translateY(0)',
                 boxShadow: isActive ? `0 4px 12px ${s.accent}40` : 'none',
               }}
@@ -360,13 +387,13 @@ export default function HeroLookbook({ recommendations = [], discounts = [], for
 
               <span
                 className="text-[10px] font-black uppercase tracking-[0.2em]"
-                style={{ color: isActive ? '#fff' : '#999' }}
+                style={{ color: isActive ? '#fff' : isDark ? '#9ca3af' : '#999' }}
               >
                 0{i + 1}
               </span>
               <span
                 className="mt-0.5 text-xs font-bold sm:text-sm"
-                style={{ color: isActive ? '#fff' : '#1a1a1a' }}
+                style={{ color: isActive ? '#fff' : isDark ? '#f3f4f6' : '#1a1a1a' }}
               >
                 {s.label}
               </span>

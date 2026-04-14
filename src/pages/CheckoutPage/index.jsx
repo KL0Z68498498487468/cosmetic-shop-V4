@@ -63,8 +63,8 @@ const CheckoutPage = () => {
           ]}
         />
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_360px]">
-          <div className="rounded-[2.5rem] bg-white p-8 shadow-soft">
-            <div className="text-sm uppercase tracking-[0.3em] text-roseBrown/70">Шаг {step} из 3</div>
+          <div className="surface-card p-8">
+            <div className="text-sm uppercase tracking-[0.3em] text-roseBrown/70 dark:text-slate-400">Шаг {step} из 3</div>
             <h1 className="mt-3 section-title">{stepTitle}</h1>
 
             <form
@@ -89,7 +89,10 @@ const CheckoutPage = () => {
                     { label: 'Самовывоз', value: 'pickup' },
                     { label: 'Постамат', value: 'locker' }
                   ].map((option) => (
-                    <label key={option.value} className="flex items-center gap-3 rounded-2xl border border-line p-4">
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-3 rounded-2xl border border-line bg-white p-4 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    >
                       <input type="radio" value={option.value} {...register('delivery')} />
                       {option.label}
                     </label>
@@ -103,7 +106,10 @@ const CheckoutPage = () => {
                     { label: 'Онлайн картой', value: 'card' },
                     { label: 'Оплата при получении', value: 'cash' }
                   ].map((option) => (
-                    <label key={option.value} className="flex items-center gap-3 rounded-2xl border border-line p-4">
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-3 rounded-2xl border border-line bg-white p-4 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    >
                       <input type="radio" value={option.value} {...register('payment')} />
                       {option.label}
                     </label>
@@ -122,9 +128,9 @@ const CheckoutPage = () => {
             ) : null}
           </div>
 
-          <div className="rounded-[2rem] bg-white p-6 shadow-card">
-            <h2 className="text-2xl font-semibold text-ink">Подтверждение заказа</h2>
-            <div className="mt-5 space-y-3 text-sm text-roseBrown/80">
+          <div className="surface-card p-6">
+            <h2 className="text-2xl font-semibold text-ink dark:text-slate-100">Подтверждение заказа</h2>
+            <div className="mt-5 space-y-3 text-sm text-roseBrown/80 dark:text-slate-300">
               {items.map((item) => (
                 <div key={`${item.productId}-${item.variant}`} className="flex items-center justify-between">
                   <span>
@@ -133,7 +139,7 @@ const CheckoutPage = () => {
                   <span>{formatPrice(item.total)}</span>
                 </div>
               ))}
-              <div className="border-t border-line pt-4 text-lg font-bold text-ink">
+              <div className="border-t border-line pt-4 text-lg font-bold text-ink dark:border-slate-700 dark:text-slate-100">
                 Итого: {formatPrice(total)}
               </div>
             </div>

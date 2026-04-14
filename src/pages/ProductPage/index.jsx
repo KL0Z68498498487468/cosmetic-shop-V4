@@ -78,10 +78,10 @@ const ProductPage = () => {
 
         <div className="mt-6 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <div className="overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-soft">
-              <img src={currentImage} alt={product.name} className="h-[520px] w-full rounded-[2rem] object-cover" />
+            <div className="surface-card overflow-hidden p-3 sm:p-4">
+              <img src={currentImage} alt={product.name} className="h-[340px] w-full rounded-[1.5rem] object-cover sm:h-[440px] sm:rounded-[2rem] lg:h-[520px]" />
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-4">
+            <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-4">
               {product.gallery.map((image) => (
                 <button
                   key={image}
@@ -91,27 +91,27 @@ const ProductPage = () => {
                     currentImage === image ? 'border-accent' : 'border-transparent'
                   }`}
                 >
-                  <img src={image} alt={product.name} className="h-28 w-full object-cover" />
+                  <img src={image} alt={product.name} className="h-20 w-full object-cover sm:h-28" />
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[2.5rem] bg-white p-8 shadow-soft">
-            <div className="text-sm uppercase tracking-[0.3em] text-roseBrown/70">{product.brand}</div>
-            <h1 className="mt-4 font-display text-5xl leading-none text-ink">{product.name}</h1>
+          <div className="surface-card p-5 sm:p-8">
+            <div className="text-sm uppercase tracking-[0.3em] text-roseBrown/70 dark:text-slate-400">{product.brand}</div>
+            <h1 className="mt-4 font-display text-3xl leading-tight text-ink dark:text-slate-100 sm:text-5xl sm:leading-none">{product.name}</h1>
             <div className="mt-5">
               <Rating value={product.rating} reviewsCount={product.reviewsCount} size="lg" />
             </div>
             <p className="mt-5 text-muted">{product.description}</p>
             <div className="mt-6 flex items-end gap-3">
-              <div className="text-3xl font-bold text-ink">{formatPrice(product.price)}</div>
+              <div className="text-3xl font-bold text-ink dark:text-slate-100">{formatPrice(product.price)}</div>
               {product.oldPrice ? (
-                <div className="text-sm text-roseBrown/50 line-through">{formatPrice(product.oldPrice)}</div>
+                <div className="text-sm text-roseBrown/50 line-through dark:text-slate-500">{formatPrice(product.oldPrice)}</div>
               ) : null}
             </div>
             <div className="mt-6">
-              <div className="mb-3 text-sm font-semibold text-ink">Выберите вариант</div>
+              <div className="mb-3 text-sm font-semibold text-ink dark:text-slate-100">Выберите вариант</div>
               <div className="flex flex-wrap gap-2">
                 {product.variants.map((variant) => (
                   <button
@@ -121,7 +121,7 @@ const ProductPage = () => {
                     className={`rounded-full border px-4 py-2 text-sm ${
                       currentVariant === variant
                         ? 'border-accent bg-accent text-white'
-                        : 'border-line bg-white'
+                        : 'border-line bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100'
                     }`}
                   >
                     {variant}
@@ -129,7 +129,7 @@ const ProductPage = () => {
                 ))}
               </div>
             </div>
-            <div className="mt-5 text-sm text-roseBrown/80">
+            <div className="mt-5 text-sm text-roseBrown/80 dark:text-slate-300">
               {product.inStock ? 'В наличии и готов к отправке' : 'Временно отсутствует'}
             </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -162,18 +162,18 @@ const ProductPage = () => {
               {['Описание', 'Состав', 'Отзывы'].map((tab) => (
                 <Tab
                   key={tab}
-                  className="rounded-full border border-line bg-white px-5 py-3 text-sm font-semibold text-ink ui-selected:border-accent ui-selected:bg-accent ui-selected:text-white"
+                  className="rounded-full border border-line bg-white px-5 py-3 text-sm font-semibold text-ink ui-selected:border-accent ui-selected:bg-accent ui-selected:text-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
                   {tab}
                 </Tab>
               ))}
             </TabList>
-            <TabPanels className="mt-8 rounded-[2rem] bg-white p-8 shadow-card">
+            <TabPanels className="surface-card mt-8 p-5 sm:p-8">
               <TabPanel>
                 <p className="text-muted">{product.description}</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   {product.features.map((feature) => (
-                    <span key={feature} className="rounded-full bg-blush px-4 py-2 text-sm text-ink">
+                    <span key={feature} className="rounded-full bg-blush px-4 py-2 text-sm text-ink dark:bg-slate-800 dark:text-slate-100">
                       {feature}
                     </span>
                   ))}
@@ -186,9 +186,9 @@ const ProductPage = () => {
                 <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
                   <div className="space-y-4">
                     {product.reviews.map((review) => (
-                      <div key={review.id} className="rounded-[1.5rem] border border-line p-5">
-                        <div className="font-semibold text-ink">{review.author}</div>
-                        <div className="mt-1 text-sm text-roseBrown/70">{review.date}</div>
+                      <div key={review.id} className="rounded-[1.5rem] border border-line p-5 dark:border-slate-700">
+                        <div className="font-semibold text-ink dark:text-slate-100">{review.author}</div>
+                        <div className="mt-1 text-sm text-roseBrown/70 dark:text-slate-400">{review.date}</div>
                         <div className="mt-3">
                           <Rating value={review.rating} />
                         </div>
@@ -196,14 +196,14 @@ const ProductPage = () => {
                       </div>
                     ))}
                   </div>
-                  <form onSubmit={handleSubmit((values) => mutation.mutate(values))} className="space-y-4 rounded-[1.5rem] border border-line p-5">
-                    <h3 className="text-xl font-semibold text-ink">Добавить отзыв</h3>
+                  <form onSubmit={handleSubmit((values) => mutation.mutate(values))} className="space-y-4 rounded-[1.5rem] border border-line p-5 dark:border-slate-700">
+                    <h3 className="text-xl font-semibold text-ink dark:text-slate-100">Добавить отзыв</h3>
                     <input
                       {...register('author')}
                       placeholder="Ваше имя"
-                      className="h-12 w-full rounded-2xl border border-line px-4"
+                      className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     />
-                    <select {...register('rating')} className="h-12 w-full rounded-2xl border border-line px-4">
+                    <select {...register('rating')} className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
                       {[5, 4, 3, 2, 1].map((value) => (
                         <option key={value} value={value}>
                           {value} звезд
@@ -214,7 +214,7 @@ const ProductPage = () => {
                       {...register('text')}
                       rows="5"
                       placeholder="Поделитесь впечатлениями"
-                      className="w-full rounded-2xl border border-line px-4 py-3"
+                      className="focus-ring w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     />
                     <Button type="submit" className="w-full">
                       Отправить отзыв

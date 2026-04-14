@@ -16,16 +16,16 @@ const ContactsPage = () => {
       <div className="container-shell py-8">
         <Breadcrumbs items={[{ label: 'Главная', to: '/' }, { label: 'Контакты' }]} />
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_420px]">
-          <div className="overflow-hidden rounded-[2.5rem] bg-white shadow-soft">
+          <div className="surface-card overflow-hidden">
             <iframe
               title="Карта Lumina"
               src="https://maps.google.com/maps?q=Tashkent&t=&z=13&ie=UTF8&iwloc=&output=embed"
-              className="h-[520px] w-full border-0"
+              className="h-[320px] w-full border-0 sm:h-[420px] lg:h-[520px]"
               loading="lazy"
             />
           </div>
 
-          <div className="rounded-[2.5rem] bg-white p-8 shadow-soft">
+          <div className="surface-card p-5 sm:p-8">
             <h1 className="section-title">Контакты</h1>
             <div className="mt-5 space-y-2 text-muted">
               <p>Телефон: +998 71 202 00 77</p>
@@ -42,11 +42,11 @@ const ContactsPage = () => {
               <Input label="Имя" {...register('name')} />
               <Input label="Email" {...register('email')} />
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-ink">Сообщение</span>
+                <span className="mb-2 block text-sm font-semibold text-ink dark:text-slate-200">Сообщение</span>
                 <textarea
                   {...register('message')}
                   rows="5"
-                  className="w-full rounded-2xl border border-line px-4 py-3"
+                  className="focus-ring w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />
               </label>
               <Button type="submit" className="w-full">

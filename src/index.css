@@ -5,17 +5,31 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-pearl font-sans text-ink antialiased;
+    @apply bg-pearl font-sans text-ink antialiased transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100;
     margin: 0;
     min-width: 320px;
     background-image:
       radial-gradient(circle at top, rgba(255, 229, 238, 0.45), transparent 26%),
       linear-gradient(180deg, #fffaf7 0%, #fffdfa 45%, #fff7fb 100%);
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at top, rgba(120, 81, 108, 0.18), transparent 28%),
+      linear-gradient(180deg, #0b0f19 0%, #101725 45%, #16112a 100%);
   }
 
   * {
@@ -36,6 +50,28 @@
     text-decoration: none;
   }
 
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(123, 95, 107, 0.25);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
   button,
   input,
   select,
@@ -50,14 +86,26 @@
   }
 
   .glass-panel {
-    @apply border border-white/60 bg-white/80 shadow-soft backdrop-blur-xl;
+    @apply border border-white/60 bg-white/80 shadow-soft backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/80;
+  }
+
+  .surface-card {
+    @apply rounded-[2rem] border border-white/70 bg-white/90 shadow-card backdrop-blur-sm transition duration-300 dark:border-slate-700/80 dark:bg-slate-900/90;
+  }
+
+  .surface-hover {
+    @apply hover:-translate-y-1 hover:shadow-soft dark:hover:shadow-[0_14px_35px_rgba(2,6,23,0.45)];
   }
 
   .section-title {
-    @apply font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl;
+    @apply font-display text-4xl font-semibold tracking-tight text-ink dark:text-slate-100 sm:text-5xl;
   }
 
   .text-muted {
-    @apply text-sm leading-6 text-roseBrown/80;
+    @apply text-sm leading-6 text-roseBrown/80 dark:text-slate-400;
+  }
+
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950;
   }
 }

@@ -8,7 +8,7 @@ const AboutPage = () => {
       <Seo title="О нас | Lumina" />
       <div className="container-shell py-8">
         <Breadcrumbs items={[{ label: 'Главная', to: '/' }, { label: 'О нас' }]} />
-        <AnimatedSection className="mt-6 rounded-[2.5rem] bg-white p-8 shadow-soft">
+        <AnimatedSection className="surface-card mt-6 p-8">
           <h1 className="section-title">О бренде Lumina</h1>
           <p className="mt-5 max-w-3xl text-muted">
             Lumina появился как цифровой beauty-бутик для тех, кто ценит осмысленный ассортимент,
@@ -21,7 +21,7 @@ const AboutPage = () => {
               'Работаем только с официальными поставками и понятными условиями возврата.',
               'Делаем магазин комфортным и с телефона, и с большого экрана.'
             ].map((item) => (
-              <div key={item} className="rounded-[2rem] bg-pearl p-6 text-sm leading-6 text-ink">
+              <div key={item} className="rounded-[2rem] bg-pearl p-6 text-sm leading-6 text-ink dark:bg-slate-800 dark:text-slate-100">
                 {item}
               </div>
             ))}

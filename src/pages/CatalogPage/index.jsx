@@ -62,7 +62,7 @@ const CatalogPage = () => {
       <div className="container-shell py-8">
         <Breadcrumbs items={[{ label: 'Главная', to: '/' }, { label: 'Каталог' }]} />
 
-        <AnimatedSection className="mt-6 rounded-[2.5rem] bg-white/80 p-8 shadow-soft">
+        <AnimatedSection className="surface-card mt-6 p-8">
           <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
             <div>
               <FilterSidebar brands={[...new Set(products.map((product) => product.brand))]} />
@@ -79,7 +79,7 @@ const CatalogPage = () => {
                 <select
                   value={filters.sortBy}
                   onChange={(event) => setFilter('sortBy', event.target.value)}
-                  className="h-12 rounded-full border border-line bg-white px-5"
+                  className="focus-ring h-12 rounded-full border border-line bg-white px-5 text-ink transition hover:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
                   <option value="popular">По популярности</option>
                   <option value="priceAsc">Цена по возрастанию</option>

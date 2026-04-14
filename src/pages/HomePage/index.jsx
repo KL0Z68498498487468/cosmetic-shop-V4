@@ -36,18 +36,17 @@ const HomePage = () => {
 
       <div className="container-shell py-8 sm:py-10">
         
-
-
-<AnimatedSection>
-  <HeroLookbook
-    recommendations={recommendations}
-    discounts={discounts}
-    formatPrice={formatPrice}
-    siteTexts={siteTexts}
-  />
-</AnimatedSection>
+        <AnimatedSection>
+          <HeroLookbook
+            recommendations={recommendations}
+            discounts={discounts}
+            formatPrice={formatPrice}
+            siteTexts={siteTexts}
+          />
+        </AnimatedSection>
 
         <div className="mt-20 space-y-20">
+          
           <AnimatedSection>
             <SectionHeading
               eyebrow="Top дня"
@@ -100,13 +99,14 @@ const HomePage = () => {
             </div>
           </AnimatedSection>
 
-          <AnimatedSection className="rounded-[2.5rem] bg-gradient-to-r from-ink via-[#2f1d25] to-[#402733] p-8 text-white shadow-soft sm:p-10">
+          {/* ИСПРАВЛЕННЫЙ БЛОК АКЦИИ */}
+          <AnimatedSection className="rounded-[2.5rem] bg-gradient-to-r from-ink via-[#2f1d25] to-[#402733] p-8 text-white shadow-soft dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 sm:p-10">
             <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
               <div>
                 <div className="text-sm font-bold uppercase tracking-[0.3em] text-white/60">
                   Лучшие скидки
                 </div>
-                <h2 className="mt-4 font-display text-5xl leading-none">
+                <h2 className="mt-4 font-display text-3xl leading-tight sm:text-5xl sm:leading-none">
                   До -30% на уход и макияж до конца акции
                 </h2>
                 <p className="mt-4 max-w-xl text-sm leading-6 text-white/75">
@@ -119,7 +119,7 @@ const HomePage = () => {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {discounts.map((product) => (
-                  <div key={product.id} className="rounded-[2rem] bg-white/10 p-4 backdrop-blur">
+                  <div key={product.id} className="rounded-[2rem] bg-white/10 p-4 backdrop-blur dark:bg-black/30">
                     <div className="text-sm text-white/60">{product.brand}</div>
                     <div className="mt-2 text-xl font-semibold">{product.name}</div>
                     <div className="mt-4 flex items-center gap-3">
@@ -134,6 +134,7 @@ const HomePage = () => {
             </div>
           </AnimatedSection>
 
+          {/* ИСПРАВЛЕННЫЕ КАТЕГОРИИ */}
           <AnimatedSection>
             <SectionHeading
               eyebrow="Категории"
@@ -146,7 +147,11 @@ const HomePage = () => {
                   key={category.slug}
                   to={`/catalog?category=${category.slug}`}
                   className={`group overflow-hidden rounded-[2rem] p-6 shadow-card transition hover:-translate-y-1 ${
-                    index === 1 ? 'bg-mist' : index === 2 ? 'bg-mint' : 'bg-white'
+                    index === 1 
+                      ? 'bg-mist dark:bg-gray-800' 
+                      : index === 2 
+                        ? 'bg-mint dark:bg-gray-800' 
+                        : 'bg-white dark:bg-gray-900 dark:border dark:border-gray-700'
                   }`}
                 >
                   <img
@@ -156,10 +161,10 @@ const HomePage = () => {
                   />
                   <div className="mt-5 flex items-center justify-between">
                     <div>
-                      <div className="text-2xl font-semibold text-ink">{category.title}</div>
-                      <div className="mt-2 text-sm text-roseBrown/75">{category.description}</div>
+                      <div className="text-2xl font-semibold text-ink dark:text-white">{category.title}</div>
+                      <div className="mt-2 text-sm text-roseBrown/75 dark:text-gray-400">{category.description}</div>
                     </div>
-                    <span className="grid h-12 w-12 place-items-center rounded-full bg-white">
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-white dark:bg-gray-800 text-ink dark:text-white">
                       <FiArrowRight />
                     </span>
                   </div>

@@ -51,7 +51,7 @@ const Header = () => {
   };
 
   const SearchDropdown = ({ isMobile = false }) => (
-    <div className={`absolute left-0 right-0 z-50 rounded-[1.5rem] border border-line bg-white p-2 shadow-soft backdrop-blur-xl ${
+    <div className={`absolute left-0 right-0 z-50 rounded-[1.5rem] border border-line bg-white p-2 shadow-soft backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900 ${
       isMobile ? 'top-[calc(100%)] mx-4 mt-2' : 'top-[calc(100%+8px)]'
     }`}>
       <div className="max-h-[60vh] overflow-y-auto overflow-x-hidden custom-scrollbar">
@@ -78,7 +78,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/80">
         <div className="container-shell px-4 sm:px-6">
 
           {/* ── Основная строка ─────────────────────────────── */}
@@ -88,19 +88,19 @@ const Header = () => {
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full border border-line bg-white transition lg:hidden"
+              className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full border border-line bg-white transition dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 lg:hidden"
             >
               <FiMenu size={20} />
             </button>
 
             {/* Логотип */}
             <Link to="/" className="flex flex-shrink-0 items-center gap-2">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-ink text-sm font-bold text-white sm:h-10 sm:w-10 sm:rounded-2xl sm:text-base">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-ink text-sm font-bold text-white dark:bg-slate-100 dark:text-slate-900 sm:h-10 sm:w-10 sm:rounded-2xl sm:text-base">
                 L
               </span>
               <div className="hidden xs:block">
-                <div className="font-display text-xl font-semibold leading-none sm:text-2xl">Lumina</div>
-                <div className="text-[9px] uppercase tracking-[0.24em] text-roseBrown/70 hidden sm:block">beauty store</div>
+                <div className="font-display text-xl font-semibold leading-none dark:text-slate-100 sm:text-2xl">Lumina</div>
+                <div className="hidden text-[9px] uppercase tracking-[0.24em] text-roseBrown/70 dark:text-slate-400 sm:block">beauty store</div>
               </div>
             </Link>
 
@@ -123,7 +123,7 @@ const Header = () => {
                 type="button"
                 onClick={() => setSearchOpen((v) => !v)}
                 className={`grid h-10 w-10 place-items-center rounded-full border transition lg:hidden ${
-                  searchOpen ? 'border-accent bg-accent/5 text-accent' : 'border-line bg-white'
+                  searchOpen ? 'border-accent bg-accent/5 text-accent' : 'border-line bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100'
                 }`}
               >
                 {searchOpen ? <FiX size={18} /> : <FiSearch size={18} />}
@@ -132,14 +132,14 @@ const Header = () => {
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white transition hover:border-accent"
+                className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white transition hover:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               >
                 {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}
               </button>
 
               <NavLink
                 to="/wishlist"
-                className="relative grid h-10 w-10 place-items-center rounded-full border border-line bg-white transition hover:border-accent"
+                className="relative grid h-10 w-10 place-items-center rounded-full border border-line bg-white transition hover:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               >
                 <FiHeart size={18} />
                 {ids.length ? (
@@ -151,7 +151,7 @@ const Header = () => {
 
               <NavLink
                 to="/cart"
-                className="relative grid h-10 w-10 place-items-center rounded-full border border-line bg-white transition hover:border-accent"
+                className="relative grid h-10 w-10 place-items-center rounded-full border border-line bg-white transition hover:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               >
                 <FiShoppingBag size={18} />
                 {cartItemsCount ? (
@@ -184,7 +184,7 @@ const Header = () => {
               <MenuButton className="inline-flex h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-white transition hover:bg-ink/90">
                 Категории
               </MenuButton>
-              <MenuItems className="absolute left-0 mt-3 grid w-[min(720px,90vw)] gap-4 rounded-[2rem] border border-line bg-white p-5 shadow-soft focus:outline-none md:grid-cols-3">
+              <MenuItems className="absolute left-0 mt-3 grid w-[min(720px,90vw)] gap-4 rounded-[2rem] border border-line bg-white p-5 shadow-soft focus:outline-none dark:border-slate-700 dark:bg-slate-900 md:grid-cols-3">
                 {siteTexts.categories.map((category) => (
                   <MenuItem key={category.slug}>
                     <Link
@@ -192,15 +192,15 @@ const Header = () => {
                       className="rounded-[1.5rem] p-3 transition hover:bg-blush/60"
                     >
                       <img src={category.image} alt={category.title} className="h-32 w-full rounded-[1.25rem] object-cover" />
-                      <div className="mt-3 font-semibold text-ink">{category.title}</div>
-                      <div className="mt-1 text-xs text-roseBrown/75 line-clamp-2">{category.description}</div>
+                      <div className="mt-3 font-semibold text-ink dark:text-slate-100">{category.title}</div>
+                      <div className="mt-1 text-xs text-roseBrown/75 line-clamp-2 dark:text-slate-400">{category.description}</div>
                     </Link>
                   </MenuItem>
                 ))}
               </MenuItems>
             </Menu>
 
-            <nav className="flex flex-wrap items-center gap-6 text-sm font-semibold text-roseBrown/80">
+            <nav className="flex flex-wrap items-center gap-6 text-sm font-semibold text-roseBrown/80 dark:text-slate-300">
               {siteTexts.nav.map((item) => (
                 <NavLink
                   key={item.to}
@@ -226,15 +226,15 @@ const Header = () => {
         <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={closeDrawer} />
         
         <aside
-          className={`absolute inset-y-0 left-0 flex w-[min(300px,85vw)] flex-col bg-white transition-transform duration-300 ${
+          className={`absolute inset-y-0 left-0 flex w-[min(300px,85vw)] flex-col bg-white transition-transform duration-300 dark:bg-slate-950 ${
             drawerOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           {/* Header Drawer */}
-          <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <div className="flex items-center justify-between border-b border-line px-5 py-4 dark:border-slate-800">
             <Link to="/" className="flex items-center gap-2">
               <span className="grid h-8 w-8 place-items-center rounded-lg bg-ink text-sm font-bold text-white">L</span>
-              <span className="font-display text-xl font-semibold">Lumina</span>
+              <span className="font-display text-xl font-semibold dark:text-slate-100">Lumina</span>
             </Link>
             <button onClick={closeDrawer} className="p-2 -mr-2"><FiX size={20} /></button>
           </div>
@@ -243,21 +243,21 @@ const Header = () => {
             {/* Профиль */}
             <NavLink
               to="/profile"
-              className="mb-8 flex items-center gap-3 rounded-2xl bg-blush/30 p-3"
+              className="mb-8 flex items-center gap-3 rounded-2xl bg-blush/30 p-3 dark:bg-slate-900"
             >
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-white text-roseBrown shadow-sm">
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-white text-roseBrown shadow-sm dark:bg-slate-800 dark:text-slate-200">
                 <FiUser size={18} />
               </div>
               <div>
-                <div className="text-xs text-roseBrown/60">Личный кабинет</div>
-                <div className="text-sm font-bold text-ink">Войти / Профиль</div>
+                <div className="text-xs text-roseBrown/60 dark:text-slate-400">Личный кабинет</div>
+                <div className="text-sm font-bold text-ink dark:text-slate-100">Войти / Профиль</div>
               </div>
               <FiChevronRight size={16} className="ml-auto text-roseBrown/40" />
             </NavLink>
 
             {/* Навигация */}
             <div className="mb-8">
-              <div className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-roseBrown/40">Меню</div>
+              <div className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-roseBrown/40 dark:text-slate-500">Меню</div>
               <nav className="grid gap-1">
                 {siteTexts.nav.map((item) => (
                   <NavLink
@@ -265,7 +265,7 @@ const Header = () => {
                     to={item.to}
                     className={({ isActive }) =>
                       `flex items-center justify-between rounded-xl px-4 py-3 text-sm font-bold transition ${
-                        isActive ? 'bg-ink text-white shadow-md' : 'text-ink active:bg-blush/40'
+                        isActive ? 'bg-ink text-white shadow-md dark:bg-slate-100 dark:text-slate-900' : 'text-ink active:bg-blush/40 dark:text-slate-200 dark:active:bg-slate-800'
                       }`
                     }
                   >
@@ -278,18 +278,18 @@ const Header = () => {
 
             {/* Категории */}
             <div>
-              <div className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-roseBrown/40">Категории</div>
+              <div className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-roseBrown/40 dark:text-slate-500">Категории</div>
               <div className="grid gap-2">
                 {siteTexts.categories.map((category) => (
                   <Link
                     key={category.slug}
                     to={`/catalog?category=${category.slug}`}
-                    className="flex items-center gap-3 overflow-hidden rounded-xl border border-line p-2 transition active:scale-[0.98]"
+                    className="flex items-center gap-3 overflow-hidden rounded-xl border border-line p-2 transition active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900"
                   >
                     <img src={category.image} alt={category.title} className="h-12 w-12 flex-shrink-0 rounded-lg object-cover" />
                     <div className="min-w-0">
-                      <div className="text-xs font-bold text-ink">{category.title}</div>
-                      <div className="truncate text-[10px] text-roseBrown/60">{category.description}</div>
+                      <div className="text-xs font-bold text-ink dark:text-slate-100">{category.title}</div>
+                      <div className="truncate text-[10px] text-roseBrown/60 dark:text-slate-400">{category.description}</div>
                     </div>
                   </Link>
                 ))}
@@ -297,11 +297,11 @@ const Header = () => {
             </div>
           </div>
 
-          <div className="mt-auto border-t border-line p-4">
+          <div className="mt-auto border-t border-line p-4 dark:border-slate-800">
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold text-ink"
+              className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-4 py-3 text-sm font-bold text-ink dark:bg-slate-900 dark:text-slate-100"
             >
               <div className="flex items-center gap-3">
                 {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}

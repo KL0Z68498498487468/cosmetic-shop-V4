@@ -16,18 +16,20 @@ const ProductCard = ({ product, onQuickView, className }) => {
   return (
     <article
       className={cn(
-        'group relative overflow-hidden rounded-[2rem] border border-white/70 bg-white p-4 shadow-card transition duration-500 hover:-translate-y-1 hover:shadow-soft',
+        'surface-card surface-hover group relative overflow-hidden p-4',
         className
       )}
     >
-      <div className="absolute inset-x-6 top-0 h-24 rounded-b-[2rem] bg-gradient-to-b from-blush/70 to-transparent opacity-0 transition duration-500 group-hover:opacity-100" />
+      <div className="absolute inset-x-6 top-0 h-24 rounded-b-[2rem] bg-gradient-to-b from-blush/70 to-transparent opacity-0 transition duration-500 group-hover:opacity-100 dark:from-violet-400/20" />
       <div className="absolute right-4 top-4 z-10 flex flex-col gap-2">
         <button
           type="button"
           onClick={() => toggleWishlist(product.id)}
           className={cn(
-            'grid h-10 w-10 place-items-center rounded-full border bg-white/90 transition',
-            isWishlisted ? 'border-accent text-accent' : 'border-line text-ink hover:border-accent'
+            'focus-ring grid h-10 w-10 place-items-center rounded-full border bg-white/90 transition dark:bg-slate-900/90',
+            isWishlisted
+              ? 'border-accent text-accent'
+              : 'border-line text-ink hover:border-accent dark:border-slate-700 dark:text-slate-100'
           )}
         >
           <FiHeart className={isWishlisted ? 'fill-current' : ''} />
@@ -35,14 +37,14 @@ const ProductCard = ({ product, onQuickView, className }) => {
         <button
           type="button"
           onClick={() => onQuickView?.(product)}
-          className="grid h-10 w-10 place-items-center rounded-full border border-line bg-white/90 transition hover:border-accent"
+          className="focus-ring grid h-10 w-10 place-items-center rounded-full border border-line bg-white/90 transition hover:border-accent dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-100"
         >
           <FiEye />
         </button>
       </div>
 
       <Link to={`/catalog/${product.slug}`} className="block">
-        <div className="relative overflow-hidden rounded-[1.6rem] bg-sand">
+        <div className="relative overflow-hidden rounded-[1.6rem] bg-sand dark:bg-slate-800">
           <img
             src={product.image}
             alt={product.name}
@@ -50,7 +52,7 @@ const ProductCard = ({ product, onQuickView, className }) => {
             className="h-72 w-full object-cover transition duration-500 group-hover:scale-105"
           />
           {product.badge ? (
-            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-ink">
+            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-ink dark:bg-slate-900/90 dark:text-slate-100">
               {product.badge}
             </span>
           ) : null}
@@ -58,18 +60,18 @@ const ProductCard = ({ product, onQuickView, className }) => {
       </Link>
 
       <div className="mt-5">
-        <div className="text-xs uppercase tracking-[0.22em] text-roseBrown/70">{product.brand}</div>
-        <Link to={`/catalog/${product.slug}`} className="mt-2 block text-lg font-semibold text-ink">
+        <div className="text-xs uppercase tracking-[0.22em] text-roseBrown/70 dark:text-slate-400">{product.brand}</div>
+        <Link to={`/catalog/${product.slug}`} className="mt-2 block text-lg font-semibold text-ink dark:text-slate-100">
           {product.name}
         </Link>
-        <div className="mt-1 text-sm text-roseBrown/75">{product.type}</div>
+        <div className="mt-1 text-sm text-roseBrown/75 dark:text-slate-400">{product.type}</div>
         <div className="mt-3">
           <Rating value={product.rating} reviewsCount={product.reviewsCount} />
         </div>
         <div className="mt-4 flex items-end gap-2">
-          <div className="text-xl font-extrabold text-ink">{formatPrice(product.price)}</div>
+          <div className="text-xl font-extrabold text-ink dark:text-slate-100">{formatPrice(product.price)}</div>
           {product.oldPrice ? (
-            <div className="text-sm text-roseBrown/50 line-through">{formatPrice(product.oldPrice)}</div>
+            <div className="text-sm text-roseBrown/50 line-through dark:text-slate-500">{formatPrice(product.oldPrice)}</div>
           ) : null}
         </div>
       </div>

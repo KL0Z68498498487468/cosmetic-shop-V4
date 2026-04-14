@@ -11,8 +11,8 @@ const Rating = ({ value, reviewsCount, size = 'sm' }) => {
           />
         ))}
       </div>
-      <span className="font-semibold text-ink">{value}</span>
-      {reviewsCount ? <span className="text-roseBrown/70">({reviewsCount})</span> : null}
+      <span className="font-semibold text-ink dark:text-slate-100">{value}</span>
+      {reviewsCount ? <span className="text-roseBrown/70 dark:text-slate-400">({reviewsCount})</span> : null}
     </div>
   );
 };

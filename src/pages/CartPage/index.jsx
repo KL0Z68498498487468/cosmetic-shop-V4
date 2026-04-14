@@ -36,7 +36,7 @@ const CartPage = () => {
           <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={`${item.productId}-${item.variant}`} className="rounded-[2rem] bg-white p-5 shadow-card">
+                <div key={`${item.productId}-${item.variant}`} className="surface-card p-5">
                   <div className="flex flex-col gap-5 sm:flex-row">
                     <img
                       src={item.product.image}
@@ -44,11 +44,11 @@ const CartPage = () => {
                       className="h-36 w-full rounded-[1.5rem] object-cover sm:w-36"
                     />
                     <div className="flex-1">
-                      <div className="text-sm uppercase tracking-[0.2em] text-roseBrown/70">
+                      <div className="text-sm uppercase tracking-[0.2em] text-roseBrown/70 dark:text-slate-400">
                         {item.product.brand}
                       </div>
-                      <div className="mt-2 text-xl font-semibold text-ink">{item.product.name}</div>
-                      <div className="mt-2 text-sm text-roseBrown/70">Вариант: {item.variant}</div>
+                      <div className="mt-2 text-xl font-semibold text-ink dark:text-slate-100">{item.product.name}</div>
+                      <div className="mt-2 text-sm text-roseBrown/70 dark:text-slate-400">Вариант: {item.variant}</div>
                       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <QuantitySelector
                           value={item.quantity}
@@ -56,7 +56,7 @@ const CartPage = () => {
                             updateQuantity(item.productId, item.variant, value)
                           }
                         />
-                        <div className="text-xl font-bold text-ink">{formatPrice(item.total)}</div>
+                        <div className="text-xl font-bold text-ink dark:text-slate-100">{formatPrice(item.total)}</div>
                       </div>
                       <div className="mt-4 flex gap-4 text-sm font-semibold">
                         <button
@@ -83,16 +83,16 @@ const CartPage = () => {
               ))}
             </div>
 
-            <div className="rounded-[2rem] bg-white p-6 shadow-soft">
-              <h2 className="text-2xl font-semibold text-ink">Ваш заказ</h2>
-              <div className="mt-6 space-y-4 text-sm text-roseBrown/80">
+            <div className="surface-card p-6">
+              <h2 className="text-2xl font-semibold text-ink dark:text-slate-100">Ваш заказ</h2>
+              <div className="mt-6 space-y-4 text-sm text-roseBrown/80 dark:text-slate-300">
                 <label className="block">
-                  <span className="mb-2 block font-semibold text-ink">Промокод</span>
+                  <span className="mb-2 block font-semibold text-ink dark:text-slate-100">Промокод</span>
                   <input
                     value={promoCode}
                     onChange={(event) => setPromoCode(event.target.value)}
                     placeholder="Например, LUMINA10"
-                    className="h-12 w-full rounded-2xl border border-line px-4"
+                    className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                   />
                 </label>
                 <div className="flex items-center justify-between">
@@ -107,7 +107,7 @@ const CartPage = () => {
                   <span>Доставка</span>
                   <span>{delivery ? formatPrice(delivery) : 'Бесплатно'}</span>
                 </div>
-                <div className="flex items-center justify-between border-t border-line pt-4 text-lg font-bold text-ink">
+                <div className="flex items-center justify-between border-t border-line pt-4 text-lg font-bold text-ink dark:border-slate-700 dark:text-slate-100">
                   <span>Итого</span>
                   <span>{formatPrice(total)}</span>
                 </div>
