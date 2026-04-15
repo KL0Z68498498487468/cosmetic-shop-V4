@@ -10,12 +10,10 @@ import { isSupabaseConfigured } from '@/lib/supabaseClient.js';
 import { useAuthStore } from '@/store/authStore.js';
 
 const schema = yup.object({
+  fullName: yup.string().min(2, 'Введите имя').required('Введите имя'),
   email: yup.string().email('Некорректный email').required('Введите email'),
   password: yup.string().min(6, 'Минимум 6 символов').required('Введите пароль'),
-  confirmPassword: yup
-    .string()
-    .oneOf([yup.ref('password')], 'Пароли не совпадают')
-    .required('Подтвердите пароль')
+  confirmPassword: yup.string().oneOf([yup.ref('password')], 'Пароли не совпадают').required('Подтвердите пароль')
 });
 
 const RegisterPage = () => {
@@ -29,15 +27,15 @@ const RegisterPage = () => {
     formState: { errors, isSubmitting }
   } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: { email: '', password: '', confirmPassword: '' }
+    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' }
   });
 
   useEffect(() => {
     if (user) navigate('/profile', { replace: true });
   }, [user, navigate]);
 
-  const onSubmit = async ({ email, password }) => {
-    const res = await signUpWithPassword({ email, password });
+  const onSubmit = async ({ fullName, email, password }) => {
+    const res = await signUpWithPassword({ fullName, email, password });
     if (!res?.ok) return;
 
     if (res.requiresEmailConfirmation) {
@@ -60,18 +58,27 @@ const RegisterPage = () => {
             <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink dark:text-slate-100">
               Регистрация
             </h1>
-            <p className="mt-3 text-muted">Создайте аккаунт, чтобы оформить заказ и управлять историей покупок.</p>
+            <p className="mt-3 text-muted">
+              Создайте аккаунт, чтобы оформить заказ, сохранить данные доставки и управлять историей покупок.
+            </p>
 
             {!isSupabaseConfigured ? (
               <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-200">
-                Supabase не настроен. Добавьте переменные окружения{' '}
-                <span className="font-semibold">VITE_SUPABASE_URL</span> и{' '}
-                <span className="font-semibold">VITE_SUPABASE_ANON_KEY</span> РёР»Рё{' '}
+                Supabase не настроен. Добавьте переменные окружения <span className="font-semibold">VITE_SUPABASE_URL</span> и{' '}
+                <span className="font-semibold">VITE_SUPABASE_ANON_KEY</span> или{' '}
                 <span className="font-semibold">VITE_SUPABASE_PUBLISHABLE_KEY</span>.
               </div>
             ) : null}
 
             <form onSubmit={handleSubmit(onSubmit)} className="mt-8 grid gap-4">
+              <Input
+                label="Имя"
+                type="text"
+                placeholder="Как к вам обращаться"
+                autoComplete="name"
+                error={errors.fullName?.message}
+                {...register('fullName')}
+              />
               <Input
                 label="Email"
                 type="email"
@@ -99,7 +106,7 @@ const RegisterPage = () => {
 
               <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button type="submit" disabled={isSubmitting || !isSupabaseConfigured} className="sm:min-w-[180px]">
-                  {isSubmitting ? 'Создаем…' : 'Зарегистрироваться'}
+                  {isSubmitting ? 'Создаём…' : 'Зарегистрироваться'}
                 </Button>
                 <Link
                   to="/login"
