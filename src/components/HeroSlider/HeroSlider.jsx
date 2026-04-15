@@ -241,7 +241,7 @@ function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTe
             </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {cats.map((cat) => (
+              {cats.map((cat, i) => (
                 <Link key={cat.slug} to={`/catalog?category=${cat.slug}`}
                   className={`group relative overflow-hidden rounded-2xl transition hover:-translate-y-1 ${
                     isDark ? 'bg-slate-900 shadow-[0_4px_14px_rgba(2,6,23,0.4)]' : 'bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)]'

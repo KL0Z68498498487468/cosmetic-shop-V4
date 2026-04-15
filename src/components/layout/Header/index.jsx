@@ -11,7 +11,6 @@ import useProducts from '@/hooks/useProducts.js';
 import useWishlist from '@/hooks/useWishlist.js';
 import { useCartStore } from '@/store/cartStore.js';
 import { useThemeStore } from '@/store/themeStore.js';
-import { useAuthStore } from '@/store/authStore.js';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -26,10 +25,6 @@ const Header = () => {
     state.items.reduce((sum, item) => sum + item.quantity, 0)
   );
   const { isDark, toggleTheme } = useThemeStore();
-  const user = useAuthStore((s) => s.user);
-  const signOut = useAuthStore((s) => s.signOut);
-
-  const accountTo = user ? '/profile' : '/login';
 
   // Закрываем всё при смене страницы
   useEffect(() => {
@@ -142,49 +137,6 @@ const Header = () => {
                 {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}
               </button>
 
-              <Menu as="div" className="relative">
-                <MenuButton
-                  className="relative grid h-10 w-10 place-items-center rounded-full border border-line bg-white transition hover:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                  aria-label={user ? 'Профиль' : 'Войти'}
-                >
-                  <FiUser size={18} />
-                </MenuButton>
-                <MenuItems className="absolute right-0 mt-3 w-56 overflow-hidden rounded-[1.25rem] border border-line bg-white p-2 shadow-soft focus:outline-none dark:border-slate-700 dark:bg-slate-900">
-                  <MenuItem>
-                    <Link
-                      to={accountTo}
-                      className="block rounded-xl px-4 py-3 text-sm font-semibold text-ink transition hover:bg-blush/60 dark:text-slate-100 dark:hover:bg-slate-800/60"
-                    >
-                      {user ? 'Профиль' : 'Войти'}
-                    </Link>
-                  </MenuItem>
-                  {!user ? (
-                    <MenuItem>
-                      <Link
-                        to="/register"
-                        className="block rounded-xl px-4 py-3 text-sm font-semibold text-ink transition hover:bg-blush/60 dark:text-slate-100 dark:hover:bg-slate-800/60"
-                      >
-                        Регистрация
-                      </Link>
-                    </MenuItem>
-                  ) : null}
-                  {user ? (
-                    <MenuItem>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          await signOut();
-                          navigate('/');
-                        }}
-                        className="w-full rounded-xl px-4 py-3 text-left text-sm font-semibold text-ink transition hover:bg-blush/60 dark:text-slate-100 dark:hover:bg-slate-800/60"
-                      >
-                        Выйти
-                      </button>
-                    </MenuItem>
-                  ) : null}
-                </MenuItems>
-              </Menu>
-
               <NavLink
                 to="/wishlist"
                 className="relative grid h-10 w-10 place-items-center rounded-full border border-line bg-white transition hover:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
@@ -290,7 +242,7 @@ const Header = () => {
           <div className="flex-1 overflow-y-auto px-4 py-6 custom-scrollbar">
             {/* Профиль */}
             <NavLink
-              to={accountTo}
+              to="/profile"
               className="mb-8 flex items-center gap-3 rounded-2xl bg-blush/30 p-3 dark:bg-slate-900"
             >
               <div className="grid h-10 w-10 place-items-center rounded-full bg-white text-roseBrown shadow-sm dark:bg-slate-800 dark:text-slate-200">
@@ -298,9 +250,7 @@ const Header = () => {
               </div>
               <div>
                 <div className="text-xs text-roseBrown/60 dark:text-slate-400">Личный кабинет</div>
-                <div className="text-sm font-bold text-ink dark:text-slate-100">
-                  {user ? 'Профиль' : 'Войти / Регистрация'}
-                </div>
+                <div className="text-sm font-bold text-ink dark:text-slate-100">Войти / Профиль</div>
               </div>
               <FiChevronRight size={16} className="ml-auto text-roseBrown/40" />
             </NavLink>
