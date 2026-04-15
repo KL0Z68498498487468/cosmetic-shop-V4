@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'react-hot-toast';
 import ThemeSync from '@/components/common/ThemeSync/index.jsx';
+import AuthSync from '@/components/common/AuthSync/index.jsx';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,6 +18,7 @@ const AppProviders = ({ children }) => {
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeSync />
+        <AuthSync />
         {children}
         <Toaster
           position="top-right"
