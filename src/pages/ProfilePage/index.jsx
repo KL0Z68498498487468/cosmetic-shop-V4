@@ -4,11 +4,14 @@ import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
 import useProducts from '@/hooks/useProducts.js';
 import useWishlist from '@/hooks/useWishlist.js';
 import { useUserStore } from '@/store/userStore.js';
+import { useAuthStore } from '@/store/authStore.js';
 import { formatPrice } from '@/utils/formatPrice.js';
 
 const ProfilePage = () => {
   const profile = useUserStore((state) => state.profile);
   const orders = useUserStore((state) => state.orders);
+  const authUser = useAuthStore((s) => s.user);
+  const signOut = useAuthStore((s) => s.signOut);
   const { data: products = [] } = useProducts();
   const { items } = useWishlist(products);
 
@@ -18,7 +21,16 @@ const ProfilePage = () => {
       <div className="container-shell py-8">
         <Breadcrumbs items={[{ label: 'Главная', to: '/' }, { label: 'Личный кабинет' }]} />
         <div className="mt-6">
-          <h1 className="section-title">Личный кабинет</h1>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <h1 className="section-title">Личный кабинет</h1>
+            <button
+              type="button"
+              onClick={signOut}
+              className="inline-flex h-11 items-center justify-center rounded-full border border-line bg-white/80 px-5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-accent dark:hover:text-accent"
+            >
+              Выйти
+            </button>
+          </div>
         </div>
 
         <div className="surface-card mt-8 p-8">
@@ -42,7 +54,7 @@ const ProfilePage = () => {
                   </div>
                   <div className="rounded-[2rem] bg-pearl p-6 dark:bg-slate-800">
                     <div className="text-sm text-roseBrown/70 dark:text-slate-400">Email</div>
-                    <div className="mt-2 text-xl font-semibold dark:text-slate-100">{profile.email}</div>
+                    <div className="mt-2 text-xl font-semibold dark:text-slate-100">{authUser?.email ?? profile.email}</div>
                   </div>
                   <div className="rounded-[2rem] bg-pearl p-6 dark:bg-slate-800">
                     <div className="text-sm text-roseBrown/70 dark:text-slate-400">Телефон</div>
