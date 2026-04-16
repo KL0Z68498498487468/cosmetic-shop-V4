@@ -19,8 +19,8 @@ export default {
         line: '#ece2da'
       },
       fontFamily: {
-        sans: ['Manrope', 'sans-serif'],
-        display: ['"Cormorant Garamond"', 'serif']
+        sans: ['"Montserrat Alternates"', 'sans-serif'],
+        display: ['"Montserrat Alternates"', 'sans-serif']
       },
       boxShadow: {
         soft: '0 20px 60px rgba(126, 92, 109, 0.12)',

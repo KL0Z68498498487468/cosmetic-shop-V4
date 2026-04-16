@@ -1,413 +1,271 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiArrowRight, FiTruck, FiGift, FiShield } from 'react-icons/fi';
-import { useThemeStore } from '@/store/themeStore.js';
+import { FiArrowRight, FiStar } from 'react-icons/fi';
+import { siteTexts } from '@/constants/texts.js';
+import { useThemeStore } from '@/store/themeStore.js'; // Импорт стора
 
-const INTERVAL = 5000;
+// ── Вспомогательный компонент для анимации чисел ─────────────────────
+const AnimatedNumber = ({ end, duration = 1500, suffix = '', trigger }) => {
+  const [value, setValue] = useState(0);
 
-function buildSlides({ recommendations = [], discounts = [], formatPrice, siteTexts, isDark }) {
+  useEffect(() => {
+    if (!trigger) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 4);
+      setValue(Math.floor(ease * end));
+      if (progress < 1) window.requestAnimationFrame(step);
+    };
+    window.requestAnimationFrame(step);
+  }, [end, duration, trigger]);
+
+  return <>{value.toLocaleString('ru-RU')}{suffix}</>;
+};
+
+export default function HeroSection({ recommendations = [], formatPrice }) {
+  const isDark = useThemeStore((state) => state.isDark); // Получаем состояние темы
+  const [mounted, setMounted] = useState(false);
   const hero = siteTexts?.hero ?? {};
   const cats = siteTexts?.categories ?? [];
 
-  return [
-    // ── Слайд 0: Главный ─────────────────────────────────────────
-    {
-      id: 'main',
-      accent: '#FF6B6B',
-      label: 'Новинки',
-      bg: 'from-[#fff5f0] to-[#ffe8e0]',
-      product: recommendations[0],
-      content: ({ accent, product }) => (
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  const featured   = recommendations[0] ?? null;
+  const secondary  = recommendations[1] ?? null;
+  const tertiary   = recommendations[2] ?? null;
+
+  return (
+    <section className={`overflow-hidden rounded-2xl transition-colors duration-300 sm:rounded-3xl ${
+      isDark ? 'bg-slate-900' : 'bg-[#FAF7F4]'
+    }`}>
+
+      {/* ── Главный блок ───────────────────────────────────────────── */}
+      <div className="relative px-5 pb-0 pt-6 sm:px-8 sm:pt-8 lg:grid lg:min-h-[400px] lg:grid-cols-[1fr_340px] lg:items-center lg:gap-6">
+
+        {/* Фоновый декор */}
         <div
-          className={`relative flex h-full min-h-[360px] flex-col overflow-hidden rounded-3xl sm:min-h-[420px] ${
-            isDark ? 'bg-gradient-to-br from-slate-900 to-slate-800' : 'bg-gradient-to-br from-[#fff5f0] to-[#ffe8e0]'
-          }`}
-        >
-          <Circle size={300} top="-60px" right="-60px" color="#FF6B6B" opacity={0.08} />
-          <Circle size={150} bottom="40px" left="30px" color="#FF6B6B" opacity={0.06} />
+          className="pointer-events-none absolute right-0 top-0 h-full w-1/2 opacity-40 transition-opacity"
+          style={{
+            background: isDark 
+              ? 'radial-gradient(ellipse at 80% 30%, #334155 0%, transparent 65%)'
+              : 'radial-gradient(ellipse at 80% 30%, #f9e4d4 0%, transparent 65%)',
+          }}
+        />
+        <div
+          className="pointer-events-none absolute bottom-0 left-1/4 h-48 w-48 opacity-30 transition-all"
+          style={{
+            background: isDark ? 'radial-gradient(circle, #475569 0%, transparent 70%)' : 'radial-gradient(circle, #fce8e0 0%, transparent 70%)',
+            filter: 'blur(30px)',
+          }}
+        />
 
-          <div className="relative z-10 flex h-full flex-col justify-between p-6 sm:p-8 lg:grid lg:grid-cols-[1fr_320px] lg:items-center">
+        {/* ── Левая колонка ──────────────────────────────────── */}
+        <div className="relative z-10">
+          <div
+            className="inline-flex items-center gap-2 transition-all duration-700"
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? 'translateY(0)' : 'translateY(12px)',
+            }}
+          >
+            <span className={`h-px w-5 ${isDark ? 'bg-slate-500' : 'bg-[#C48B72]'}`} />
+            <span className={`text-[9px] font-bold uppercase tracking-[0.25em] ${isDark ? 'text-slate-400' : 'text-[#C48B72]'}`}>
+              {hero.overline ?? 'Новая коллекция · 2026'}
+            </span>
+          </div>
+
+          <h1
+            className={`mt-3 font-display leading-[0.95] transition-all duration-700 ${
+              isDark ? 'text-slate-100' : 'text-[#1C1410]'
+            }`}
+            style={{
+              fontSize: 'clamp(2rem, 4vw, 3.5rem)',
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? 'translateY(0)' : 'translateY(20px)',
+              transitionDelay: '80ms',
+            }}
+          >
+            {hero.title ?? (
+              <>
+                Красота,<br />
+                которая<br />
+                <em className={`not-italic ${isDark ? 'text-slate-400' : 'text-[#C48B72]'}`}>остаётся</em>
+              </>
+            )}
+          </h1>
+
+          <p
+            className={`mt-4 max-w-[340px] text-[13px] leading-[1.6] transition-all duration-700 ${
+              isDark ? 'text-slate-400' : 'text-[#6B5C54]'
+            }`}
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? 'translateY(0)' : 'translateY(16px)',
+              transitionDelay: '160ms',
+            }}
+          >
+            {hero.description ?? 'Премиальная косметика и парфюмерия с доставкой по Ташкенту. Только оригинальные бренды.'}
+          </p>
+
+          {/* CTA Кнопки */}
+          <div
+            className="mt-5 flex flex-wrap items-center gap-2.5 transition-all duration-700"
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? 'translateY(0)' : 'translateY(16px)',
+              transitionDelay: '240ms',
+            }}
+          >
+            <Link
+              to="/catalog"
+              className={`group inline-flex h-10 items-center gap-2 rounded-full px-5 text-[12px] font-semibold text-white transition-all ${
+                isDark ? 'bg-slate-100 !text-slate-900 hover:bg-white' : 'bg-[#1C1410] hover:bg-[#C48B72]'
+              }`}
+            >
+              {hero.ctaPrimary ?? 'В каталог'}
+              <span className={`grid h-4 w-4 place-items-center rounded-full transition-transform group-hover:translate-x-0.5 ${
+                isDark ? 'bg-slate-900/10' : 'bg-white/15'
+              }`}>
+                <FiArrowRight size={10} />
+              </span>
+            </Link>
+
+            <Link
+              to="/blog"
+              className={`inline-flex h-10 items-center gap-2 rounded-full border px-5 text-[12px] font-semibold transition-all ${
+                isDark 
+                ? 'border-slate-700 text-slate-300 hover:border-slate-500 hover:text-slate-100' 
+                : 'border-[#E0D5CF] text-[#1C1410] hover:border-[#C48B72] hover:text-[#C48B72]'
+              }`}
+            >
+              {hero.ctaSecondary ?? 'Бьюти-блог'}
+            </Link>
+          </div>
+
+          {/* Статистика с анимацией цифр */}
+          <div
+            className={`mt-6 flex flex-wrap items-center gap-4 border-t pt-5 transition-all duration-700 ${
+              isDark ? 'border-slate-800' : 'border-[#E8DDD8]'
+            }`}
+            style={{ opacity: mounted ? 1 : 0, transitionDelay: '340ms' }}
+          >
             <div>
-              <Tag color={accent}>✦ {hero.overline ?? 'Новинки сезона'}</Tag>
-
-              <h1 className={`mt-4 font-display text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>
-                {hero.title ?? (
-                  <>Beauty<br />Ритуалы</>
-                )}
-              </h1>
-
-              <p className={`mt-4 max-w-sm text-sm leading-6 ${isDark ? 'text-slate-300/80' : 'text-[#1a1a1a]/60'}`}>
-                {hero.description ?? 'Премиальная косметика и парфюмерия — только лучшее для вашей кожи.'}
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-2.5">
-                <PillLink to="/catalog" bg="#1a1a1a" color="#fff">
-                  {hero.ctaPrimary ?? 'Смотреть каталог'} <FiArrowRight size={14} />
-                </PillLink>
-                <PillLink to="/blog" bg="transparent" color="#1a1a1a" border>
-                  {hero.ctaSecondary ?? 'Beauty-блог'}
-                </PillLink>
+              <div className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-[#1C1410]'}`}>
+                <AnimatedNumber end={4800} suffix="+" trigger={mounted} />
               </div>
-
-              <div className="mt-8 grid gap-2 sm:grid-cols-3">
-                {[
-                  { icon: <FiTruck size={12} />, text: 'Доставка день в день' },
-                  { icon: <FiGift  size={12} />, text: 'Подарок от 400к сум' },
-                  { icon: <FiShield size={12} />, text: 'Оригинал 100%' },
-                ].map((b) => (
-                  <div
-                    key={b.text}
-                    className={`flex items-center gap-2 rounded-xl px-3 py-2 text-[11px] font-medium backdrop-blur-sm ${
-                      isDark ? 'bg-slate-900/70 text-slate-100' : 'bg-white/70 text-[#1a1a1a]'
-                    }`}
-                  >
-                    <span style={{ color: accent }}>{b.icon}</span>
-                    {b.text}
-                  </div>
+              <div className={`mt-0.5 text-[10px] ${isDark ? 'text-slate-500' : 'text-[#9C8880]'}`}>клиентов</div>
+            </div>
+            <div className={`h-5 w-px ${isDark ? 'bg-slate-800' : 'bg-[#E0D5CF]'}`} />
+            <div>
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <FiStar key={i} size={10} fill={isDark ? '#64748b' : '#C48B72'} stroke="none" />
                 ))}
               </div>
+              <div className={`mt-0.5 text-[10px] ${isDark ? 'text-slate-500' : 'text-[#9C8880]'}`}>рейтинг 4.9</div>
             </div>
+            <div className={`h-5 w-px ${isDark ? 'bg-slate-800' : 'bg-[#E0D5CF]'}`} />
+            <div>
+              <div className={`text-lg font-bold ${isDark ? 'text-slate-100' : 'text-[#1C1410]'}`}>
+                <AnimatedNumber end={500} suffix="+" trigger={mounted} />
+              </div>
+              <div className={`mt-0.5 text-[10px] ${isDark ? 'text-slate-500' : 'text-[#9C8880]'}`}>брендов</div>
+            </div>
+          </div>
+        </div>
 
-            {product && (
-              <Link to={`/catalog/${product.slug}`}
-                className={`group mt-8 block overflow-hidden rounded-2xl transition hover:-translate-y-1 lg:mt-0 ${
-                  isDark ? 'bg-slate-900 shadow-[0_10px_30px_rgba(2,6,23,0.45)]' : 'bg-white shadow-[0_10px_40px_rgba(0,0,0,0.08)]'
+        {/* ── Правая колонка: Карточки ─────────────────────────── */}
+        <div
+          className="relative hidden transition-all duration-700 lg:block"
+          style={{
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? 'translateY(0)' : 'translateY(24px)',
+            transitionDelay: '120ms',
+          }}
+        >
+          {featured && (
+            <Link
+              to={`/catalog/${featured.slug}`}
+              className={`group relative z-20 block overflow-hidden rounded-[1.25rem] transition-all duration-300 hover:-translate-y-1 ${
+                isDark 
+                ? 'bg-slate-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:bg-slate-750' 
+                : 'bg-white shadow-[0_8px_30px_rgba(28,20,16,0.06)]'
+              }`}
+            >
+              <div className={`absolute left-2.5 top-2.5 z-10 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest ${
+                isDark ? 'bg-slate-100 text-slate-900' : 'bg-[#1C1410] text-white'
+              }`}>
+                Хит
+              </div>
+              <img src={featured.image} alt={featured.name} className="h-48 w-full object-cover grayscale-[0.2] transition duration-500 group-hover:grayscale-0 group-hover:scale-[1.03]" />
+              <div className="flex items-center justify-between p-3.5">
+                <div>
+                  <div className={`text-[9px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-slate-500' : 'text-[#C48B72]'}`}>
+                    {featured.brand}
+                  </div>
+                  <div className={`mt-0.5 text-[13px] font-semibold ${isDark ? 'text-slate-100' : 'text-[#1C1410]'}`}>{featured.name}</div>
+                  <div className={`mt-0.5 text-[11px] font-bold ${isDark ? 'text-slate-300' : 'text-[#1C1410]'}`}>{formatPrice(featured.price)}</div>
+                </div>
+                <span className={`grid h-7 w-7 place-items-center rounded-full transition ${
+                  isDark ? 'bg-slate-700 text-white group-hover:bg-slate-100 group-hover:text-slate-900' : 'bg-[#F4EDE9] group-hover:bg-[#1C1410] group-hover:text-white'
+                }`}>
+                  <FiArrowRight size={12} />
+                </span>
+              </div>
+            </Link>
+          )}
+
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {[secondary, tertiary].filter(Boolean).map((p) => (
+              <Link
+                key={p.id}
+                to={`/catalog/${p.slug}`}
+                className={`group flex items-center gap-2 overflow-hidden rounded-xl p-2 transition-all hover:-translate-y-0.5 ${
+                  isDark ? 'bg-slate-800/50 hover:bg-slate-800' : 'bg-white shadow-[0_2px_10px_rgba(28,20,16,0.04)]'
                 }`}
               >
-                <div className="overflow-hidden">
-                  <img src={product.image} alt={product.name}
-                    className="h-48 w-full object-cover transition duration-700 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-4 sm:p-5">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>{product.brand}</div>
-                  <div className={`mt-1 text-base font-semibold ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>{product.name}</div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className={`text-base font-bold ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>{formatPrice(product.price)}</span>
-                    <span className="grid h-8 w-8 place-items-center rounded-full text-white transition group-hover:opacity-80"
-                      style={{ background: accent }}>
-                      <FiArrowRight size={14} />
-                    </span>
-                  </div>
+                <img src={p.image} className="h-10 w-10 flex-shrink-0 rounded-lg object-cover" />
+                <div className="min-w-0">
+                  <div className={`truncate text-[11px] font-semibold ${isDark ? 'text-slate-100' : 'text-[#1C1410]'}`}>{p.name}</div>
+                  <div className={`text-[10px] font-bold ${isDark ? 'text-slate-500' : 'text-[#6B5C54]'}`}>{formatPrice(p.price)}</div>
                 </div>
               </Link>
-            )}
+            ))}
           </div>
         </div>
-      ),
-    },
-
-    // ── Слайд 1: Акции ───────────────────────────────────────────
-    {
-      id: 'promo',
-      accent: '#FFD93D',
-      label: 'Скидки',
-      bg: 'from-[#1a1a1a] to-[#2d1f00]',
-      product: discounts[0],
-      content: ({ accent }) => (
-        <div className="relative flex min-h-[360px] flex-col overflow-hidden rounded-3xl bg-[#1a1a1a] sm:min-h-[420px]">
-          <Circle size={350} top="-80px" right="-80px" color={accent} opacity={0.07} />
-          <Circle size={180} bottom="-40px" left="10%" color={accent} opacity={0.05} />
-
-          <div className="absolute top-0 left-0 right-0 h-1 rounded-t-3xl" style={{ background: accent }} />
-
-          <div className="relative z-10 flex h-full flex-col justify-between p-6 sm:p-8 lg:grid lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-8">
-            <div>
-              <Tag color={accent} dark>🔥 Горячие скидки</Tag>
-
-              <h2 className="mt-4 font-display text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] text-white">
-                До<br />
-                <span style={{ color: accent }}>−30%</span><br />
-                на уход
-              </h2>
-
-              <p className="mt-4 max-w-sm text-sm leading-6 text-white/50">
-                Финальные часы весенней акции. Успейте забрать бестселлеры по лучшей цене.
-              </p>
-
-              <PillLink to="/catalog" bg={accent} color="#1a1a1a" className="mt-6">
-                Смотреть акции <FiArrowRight size={14} />
-              </PillLink>
-            </div>
-
-            <div className="mt-8 grid grid-cols-2 gap-2.5 lg:mt-0">
-              {discounts.slice(0, 4).map((p) => {
-                const disc = Math.round((1 - p.price / p.oldPrice) * 100);
-                return (
-                  <Link key={p.id} to={`/catalog/${p.slug}`}
-                    className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-sm transition hover:border-white/20 hover:bg-white/10"
-                  >
-                    <div className="absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-black text-[#1a1a1a]"
-                      style={{ background: accent }}>
-                      −{disc}%
-                    </div>
-                    <div className="text-[9px] uppercase tracking-widest text-white/40">{p.brand}</div>
-                    <div className="mt-1 text-xs font-semibold leading-snug text-white line-clamp-2">{p.name}</div>
-                    <div className="mt-2 flex flex-col items-start gap-0.5 sm:flex-row sm:items-end sm:gap-2">
-                      <span className="text-sm font-bold text-white">{formatPrice(p.price)}</span>
-                      <span className="text-[10px] text-white/30 line-through">{formatPrice(p.oldPrice)}</span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-
-    // ── Слайд 2: Рекомендации ────────────────────────────────────
-    {
-      id: 'picks',
-      accent: '#6BCB77',
-      label: 'Хиты',
-      bg: 'from-[#f0fff4] to-[#e0f5e9]',
-      content: ({ accent }) => (
-        <div
-          className={`relative flex min-h-[360px] flex-col overflow-hidden rounded-3xl sm:min-h-[420px] ${
-            isDark ? 'bg-gradient-to-br from-slate-900 to-slate-800' : 'bg-gradient-to-br from-[#f0fff4] to-[#e0f5e9]'
-          }`}
-        >
-          <Circle size={280} top="-50px" right="-50px" color={accent} opacity={0.15} />
-
-          <div className="relative z-10 p-6 sm:p-8">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <Tag color={accent}>✦ Персонально для вас</Tag>
-                <h2 className={`mt-4 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[0.95] ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>
-                  Хиты с высоким рейтингом
-                </h2>
-                <p className={`mt-2 max-w-sm text-sm ${isDark ? 'text-slate-300/80' : 'text-[#1a1a1a]/55'}`}>
-                  Покупают снова и снова — проверено клиентами.
-                </p>
-              </div>
-              <PillLink to="/catalog" bg={accent} color="#1a1a1a" className="mt-1 hidden shrink-0 sm:flex">
-                Все товары <FiArrowRight size={14} />
-              </PillLink>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {recommendations.slice(0, 4).map((p, i) => (
-                <Link key={p.id} to={`/catalog/${p.slug}`}
-                  className={`group overflow-hidden rounded-xl transition hover:-translate-y-1 ${
-                    isDark
-                      ? 'bg-slate-900 shadow-[0_4px_14px_rgba(2,6,23,0.4)] hover:shadow-[0_8px_22px_rgba(2,6,23,0.55)]'
-                      : 'bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]'
-                  }`}
-                  style={{ transitionDelay: `${i * 40}ms` }}
-                >
-                  <div className="overflow-hidden">
-                    <img src={p.image} alt={p.name}
-                      className="h-32 w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-3">
-                    <div className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: accent }}>{p.brand}</div>
-                    <div className={`mt-1 text-xs font-semibold leading-snug line-clamp-2 ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>{p.name}</div>
-                    <div className={`mt-1.5 text-sm font-bold ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>{formatPrice(p.price)}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-
-    // ── Слайд 3: Категории ───────────────────────────────────────
-    {
-      id: 'cats',
-      accent: '#A78BFA',
-      label: 'Разделы',
-      content: ({ accent }) => (
-        <div
-          className={`relative flex min-h-[360px] flex-col overflow-hidden rounded-3xl sm:min-h-[420px] ${
-            isDark ? 'bg-gradient-to-br from-slate-900 to-slate-800' : 'bg-gradient-to-br from-[#f5f0ff] to-[#ede8ff]'
-          }`}
-        >
-          <Circle size={300} top="-80px" left="-60px" color={accent} opacity={0.1} />
-          <Circle size={150} bottom="0" right="5%" color={accent} opacity={0.08} />
-
-          <div className="relative z-10 p-6 sm:p-8">
-            <Tag color={accent}>✦ Маршрут по beauty-задачам</Tag>
-
-            <div className="mt-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-              <h2 className={`font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-[0.95] ${isDark ? 'text-slate-100' : 'text-[#1a1a1a]'}`}>
-                Быстро найти<br />нужное
-              </h2>
-              <p className={`max-w-xs text-sm leading-6 lg:text-right ${isDark ? 'text-slate-300/80' : 'text-[#1a1a1a]/55'}`}>
-                Три направления — переходите прямо к нужному ассортименту.
-              </p>
-            </div>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {cats.map((cat) => (
-                <Link key={cat.slug} to={`/catalog?category=${cat.slug}`}
-                  className={`group relative overflow-hidden rounded-2xl transition hover:-translate-y-1 ${
-                    isDark ? 'bg-slate-900 shadow-[0_4px_14px_rgba(2,6,23,0.4)]' : 'bg-white shadow-[0_4px_15px_rgba(0,0,0,0.05)]'
-                  }`}
-                >
-                  <div className="overflow-hidden">
-                    <img src={cat.image} alt={cat.title}
-                      className="h-36 w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#1a1a1a]/70 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4">
-                    <div>
-                      <div className="text-base font-bold text-white">{cat.title}</div>
-                      <div className="text-[11px] text-white/70 line-clamp-1">{cat.description}</div>
-                    </div>
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[#1a1a1a] transition group-hover:scale-110"
-                      style={{ background: accent }}>
-                      <FiArrowRight size={12} />
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-  ];
-}
-
-// ─── Атомарные компоненты ─────────────────────────────────────────────
-function Tag({ color, dark, children }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]"
-      style={{
-        background: `${color}20`,
-        color: dark ? color : color,
-        border: `1px solid ${color}40`,
-      }}>
-      {children}
-    </span>
-  );
-}
-
-function PillLink({ to, bg, color, border, children, className = '' }) {
-  return (
-    <Link to={to}
-      className={`inline-flex h-10 items-center gap-2 rounded-full px-5 text-xs font-bold transition hover:opacity-80 ${className}`}
-      style={{
-        background: bg,
-        color,
-        border: border ? `1.5px solid ${color}30` : 'none',
-      }}>
-      {children}
-    </Link>
-  );
-}
-
-function Circle({ size, top, bottom, left, right, color, opacity }) {
-  return (
-    <div className="pointer-events-none absolute rounded-full"
-      style={{
-        width: size, height: size,
-        top, bottom, left, right,
-        background: color,
-        opacity,
-        filter: 'blur(40px)',
-      }}
-    />
-  );
-}
-
-// ─── Главный компонент ────────────────────────────────────────────────
-export default function HeroLookbook({ recommendations = [], discounts = [], formatPrice, siteTexts }) {
-  const isDark = useThemeStore((state) => state.isDark);
-  const [active, setActive] = useState(0);
-  const [fading, setFading] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const pendingRef = useRef(null);
-
-  const slides = buildSlides({ recommendations, discounts, formatPrice, siteTexts, isDark });
-
-  const goTo = useCallback((next) => {
-    if (next === active || fading) return;
-    setFading(true);
-    pendingRef.current = next;
-    setTimeout(() => {
-      setActive(next);
-      setFading(false);
-    }, 380);
-  }, [active, fading]);
-
-  const goNext = useCallback(() => goTo((active + 1) % slides.length), [active, goTo, slides.length]);
-
-  useEffect(() => {
-    if (paused) return;
-    const t = setTimeout(goNext, INTERVAL);
-    return () => clearTimeout(t);
-  }, [active, paused, goNext]);
-
-  const current = slides[active];
-
-  return (
-    <div
-      className="relative dark:[color-scheme:dark]"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      <div
-        style={{
-          opacity: fading ? 0 : 1,
-          transform: fading ? 'scale(0.985)' : 'scale(1)',
-          transition: 'opacity 0.38s ease, transform 0.38s ease',
-        }}
-      >
-        {current.content({ accent: current.accent, product: current.product })}
       </div>
 
-      <div className="mt-3 flex items-stretch gap-2.5 overflow-x-auto pb-1">
-        {slides.map((s, i) => {
-          const isActive = i === active;
-          return (
-            <button
-              key={s.id}
-              onClick={() => goTo(i)}
-              className="group relative flex min-w-[104px] flex-none flex-col items-start overflow-hidden rounded-xl px-3 py-2.5 text-left transition-all sm:min-w-0 sm:flex-1 sm:px-4"
-              style={{
-                background: isActive ? s.accent : isDark ? '#1f2937' : '#f5f5f5',
-                transform: isActive ? 'translateY(-1px)' : 'translateY(0)',
-                boxShadow: isActive ? `0 4px 12px ${s.accent}40` : 'none',
-              }}
+      {/* ── Нижняя полоса: Категории ──────────────────────────────────── */}
+      {cats.length > 0 && (
+        <div className={`mt-5 grid divide-x border-t transition-all duration-700 sm:grid-cols-3 ${
+          isDark ? 'divide-slate-800 border-slate-800' : 'divide-[#E8DDD8] border-[#E8DDD8]'
+        }`}
+        style={{ opacity: mounted ? 1 : 0, transitionDelay: '420ms' }}>
+          {cats.slice(0, 3).map((cat) => (
+            <Link
+              key={cat.slug}
+              to={`/catalog?category=${cat.slug}`}
+              className={`group flex items-center gap-3 px-4 py-3 transition-colors ${
+                isDark ? 'hover:bg-slate-800/50' : 'hover:bg-[#F0E9E5]'
+              }`}
             >
-              {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-black/10">
-                  <div
-                    key={active}
-                    className="h-full bg-black/20 rounded-r-full"
-                    style={{ animation: paused ? 'none' : `lb-progress ${INTERVAL}ms linear forwards` }}
-                  />
-                </div>
-              )}
-
-              <span
-                className="text-[10px] font-black uppercase tracking-[0.2em]"
-                style={{ color: isActive ? '#fff' : isDark ? '#9ca3af' : '#999' }}
-              >
-                0{i + 1}
-              </span>
-              <span
-                className="mt-0.5 text-xs font-bold sm:text-sm"
-                style={{ color: isActive ? '#fff' : isDark ? '#f3f4f6' : '#1a1a1a' }}
-              >
-                {s.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <style>{`
-        @keyframes lb-progress {
-          from { width: 0% }
-          to   { width: 100% }
-        }
-      `}</style>
-    </div>
+              <div className="h-8 w-8 flex-shrink-0 overflow-hidden rounded-lg">
+                <img src={cat.image} className="h-full w-full object-cover grayscale-[0.3] group-hover:grayscale-0" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className={`truncate text-[12px] font-bold ${isDark ? 'text-slate-200' : 'text-[#1C1410]'}`}>{cat.title}</div>
+                <div className={`truncate text-[10px] ${isDark ? 'text-slate-500' : 'text-[#9C8880]'}`}>{cat.description}</div>
+              </div>
+              <FiArrowRight size={12} className={`transition-transform group-hover:translate-x-0.5 ${isDark ? 'text-slate-600' : 'text-[#C8B5AB]'}`} />
+            </Link>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
