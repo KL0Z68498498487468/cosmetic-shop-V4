@@ -1,5 +1,7 @@
 -- Create admin_settings table for campaign defaults used by admin panel
-CREATE TABLE IF NOT EXISTS public.admin_settings (
+DROP TABLE IF EXISTS public.admin_settings;
+
+CREATE TABLE public.admin_settings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   campaign_number text NOT NULL DEFAULT '01',
   campaign_year integer NOT NULL DEFAULT extract(year from now())::int,
@@ -22,5 +24,4 @@ BEFORE UPDATE ON public.admin_settings
 FOR EACH ROW EXECUTE FUNCTION public.admin_settings_set_updated_at();
 
 INSERT INTO public.admin_settings (campaign_number, campaign_year, campaign_country, campaign_currency)
-SELECT '01', extract(year from now())::int, 'UZ', 'UZS'
-WHERE NOT EXISTS (SELECT 1 FROM public.admin_settings);
+VALUES ('01', extract(year from now())::int, 'UZ', 'UZS');

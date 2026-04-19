@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { nanoid } from 'nanoid';
 import { blogPosts } from '@/data/blogPosts.js';
-import { products } from '@/data/products.js';
 import { createDelay } from '@/utils/helpers.js';
 import { supabase } from '@/lib/supabaseClient.js';
 
@@ -9,19 +8,16 @@ export const api = axios.create({
   baseURL: '/api'
 });
 
-let localProducts = [...products];
-
 export const fetchProducts = async () => {
   try {
-    // Сначала попробуем загрузить из Supabase
+    // Загружаем из Supabase
     const { data, error } = await supabase
       .from('products')
       .select('catalog');
 
     if (error) {
       console.error('Error fetching from Supabase:', error);
-      // Fallback to local products
-      return createDelay(localProducts, 450);
+      return [];
     }
 
     if (data && data.length > 0) {
@@ -50,25 +46,26 @@ export const fetchProducts = async () => {
           bundleIds: product.actions?.filter(a => a.type === 'bundle_promotion').map(a => a.target_product_id) || []
         }))
       );
-      return createDelay(supabaseProducts, 450);
+      return supabaseProducts;
     }
 
-    // Fallback to local products
-    return createDelay(localProducts, 450);
+    return [];
   } catch (err) {
     console.error('Error fetching products:', err);
-    return createDelay(localProducts, 450);
+    return [];
   }
 };
 
 export const fetchProductBySlug = async (slug) => {
-  const product = localProducts.find((item) => item.slug === slug);
+  // Для простоты, получаем все продукты и ищем по slug
+  const products = await fetchProducts();
+  const product = products.find((item) => item.slug === slug);
 
   if (!product) {
     throw new Error('Товар не найден');
   }
 
-  return createDelay(product, 350);
+  return product;
 };
 
 export const fetchBlogPosts = async () => createDelay(blogPosts, 300);
@@ -81,28 +78,4 @@ export const fetchBlogPostBySlug = async (slug) => {
   }
 
   return createDelay(post, 250);
-};
-
-export const submitReview = async ({ productId, review }) => {
-  localProducts = localProducts.map((product) => {
-    if (product.id !== productId) {
-      return product;
-    }
-
-    return {
-      ...product,
-      reviewsCount: product.reviewsCount + 1,
-      rating: Number(((product.rating + review.rating) / 2).toFixed(1)),
-      reviews: [
-        {
-          id: nanoid(),
-          date: '13 апреля 2026',
-          ...review
-        },
-        ...product.reviews
-      ]
-    };
-  });
-
-  return createDelay({ success: true }, 400);
 };

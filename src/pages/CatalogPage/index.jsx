@@ -4,14 +4,16 @@ import Seo from '@/components/common/Seo/index.jsx';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
 import ProductQuickView from '@/components/product/ProductQuickView/index.jsx';
 import ProductCard from '@/components/product/ProductCard/index.jsx';
+import ProductCardSkeleton from '@/components/product/ProductCard/ProductCardSkeleton.jsx';
 import FilterSidebar from '@/components/ui/FilterSidebar/index.jsx';
 import AnimatedSection from '@/components/ui/AnimatedSection/index.jsx';
+import EmptyState from '@/components/common/EmptyState/index.jsx';
 import useProducts from '@/hooks/useProducts.js';
 import { useFilterStore } from '@/store/filterStore.js';
 import { filterProducts, sortProducts } from '@/utils/filterProducts.js';
 
 const CatalogPage = () => {
-  const { data: products = [] } = useProducts();
+  const { data: products = [], isLoading } = useProducts();
   const { filters, setFilter } = useFilterStore();
   const [visibleCount, setVisibleCount] = useState(8);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
@@ -90,13 +92,26 @@ const CatalogPage = () => {
               </div>
 
               <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {filteredProducts.slice(0, visibleCount).map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onQuickView={setQuickViewProduct}
-                  />
-                ))}
+                {isLoading ? (
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <ProductCardSkeleton key={index} />
+                  ))
+                ) : filteredProducts.length === 0 ? (
+                  <div className="col-span-full">
+                    <EmptyState
+                      title="Товаров пока нет"
+                      description="Обновляем каталог, загляните позже"
+                    />
+                  </div>
+                ) : (
+                  filteredProducts.slice(0, visibleCount).map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onQuickView={setQuickViewProduct}
+                    />
+                  ))
+                )}
               </div>
 
               <div ref={triggerRef} className="h-10" />

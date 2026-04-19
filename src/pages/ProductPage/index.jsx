@@ -12,7 +12,7 @@ import Rating from '@/components/product/Rating/index.jsx';
 import ProductCard from '@/components/product/ProductCard/index.jsx';
 import Carousel from '@/components/ui/Carousel/index.jsx';
 import SectionHeading from '@/components/ui/SectionHeading/index.jsx';
-import { fetchProductBySlug, fetchProducts, submitReview } from '@/services/api.js';
+import { fetchProductBySlug, fetchProducts } from '@/services/api.js';
 import { queryKeys } from '@/services/queryKeys.js';
 import { useCartStore } from '@/store/cartStore.js';
 import { useWishlistStore } from '@/store/wishlistStore.js';
@@ -38,14 +38,15 @@ const ProductPage = () => {
     defaultValues: { author: '', rating: 5, text: '' }
   });
 
-  const mutation = useMutation({
-    mutationFn: (review) => submitReview({ productId: product.id, review }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.product(slug) });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.products });
-      reset();
-    }
-  });
+  // Review submission temporarily disabled - needs database implementation
+  // const mutation = useMutation({
+  //   mutationFn: (review) => submitReview({ productId: product.id, review }),
+  //   onSuccess: async () => {
+  //     await queryClient.invalidateQueries({ queryKey: queryKeys.product(slug) });
+  //     await queryClient.invalidateQueries({ queryKey: queryKeys.products });
+  //     reset();
+  //   }
+  // });
 
   const relatedProducts = useMemo(
     () => products.filter((item) => product?.relatedIds.includes(item.id)),
@@ -196,7 +197,7 @@ const ProductPage = () => {
                       </div>
                     ))}
                   </div>
-                  <form onSubmit={handleSubmit((values) => mutation.mutate(values))} className="space-y-4 rounded-[1.5rem] border border-line p-5 dark:border-slate-700">
+                  <form onSubmit={handleSubmit((values) => alert('Отправка отзывов временно отключена - требуется реализация в базе данных'))} className="space-y-4 rounded-[1.5rem] border border-line p-5 dark:border-slate-700">
                     <h3 className="text-xl font-semibold text-ink dark:text-slate-100">Добавить отзыв</h3>
                     <input
                       {...register('author')}
