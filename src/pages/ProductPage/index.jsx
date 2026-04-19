@@ -1,5 +1,5 @@
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { SwiperSlide } from 'swiper/react';
 import { FiHeart, FiShoppingBag } from 'react-icons/fi';
@@ -20,7 +20,6 @@ import { formatPrice } from '@/utils/formatPrice.js';
 
 const ProductPage = () => {
   const { slug } = useParams();
-  const queryClient = useQueryClient();
   const addItem = useCartStore((state) => state.addItem);
   const toggleWishlist = useWishlistStore((state) => state.toggle);
   const wishlistIds = useWishlistStore((state) => state.ids);
@@ -34,7 +33,7 @@ const ProductPage = () => {
     queryKey: queryKeys.products,
     queryFn: fetchProducts
   });
-  const { register, handleSubmit, reset } = useForm({
+  const { register, handleSubmit } = useForm({
     defaultValues: { author: '', rating: 5, text: '' }
   });
 
@@ -49,12 +48,18 @@ const ProductPage = () => {
   // });
 
   const relatedProducts = useMemo(
-    () => products.filter((item) => product?.relatedIds.includes(item.id)),
+    () => {
+      if (!product?.relatedIds?.length) return [];
+      return products.filter((item) => product.relatedIds.includes(item.id));
+    },
     [product, products]
   );
 
   const bundleProducts = useMemo(
-    () => products.filter((item) => product?.bundleIds.includes(item.id)),
+    () => {
+      if (!product?.bundleIds?.length) return [];
+      return products.filter((item) => product.bundleIds.includes(item.id));
+    },
     [product, products]
   );
 
@@ -63,7 +68,7 @@ const ProductPage = () => {
   }
 
   const currentVariant = selectedVariant || product.selectedVariant;
-  const currentImage = activeImage || product.gallery[0];
+  const currentImage = activeImage || product.gallery?.[0] || product.image || '';
 
   return (
     <>
@@ -83,7 +88,7 @@ const ProductPage = () => {
               <img src={currentImage} alt={product.name} className="h-[340px] w-full rounded-[1.5rem] object-cover sm:h-[440px] sm:rounded-[2rem] lg:h-[520px]" />
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-4">
-              {product.gallery.map((image) => (
+              {(product.gallery || []).map((image) => (
                 <button
                   key={image}
                   type="button"
@@ -114,7 +119,7 @@ const ProductPage = () => {
             <div className="mt-6">
               <div className="mb-3 text-sm font-semibold text-ink dark:text-slate-100">Выберите вариант</div>
               <div className="flex flex-wrap gap-2">
-                {product.variants.map((variant) => (
+                {(product.variants || []).map((variant) => (
                   <button
                     key={variant}
                     type="button"
@@ -173,7 +178,7 @@ const ProductPage = () => {
               <TabPanel>
                 <p className="text-muted">{product.description}</p>
                 <div className="mt-5 flex flex-wrap gap-2">
-                  {product.features.map((feature) => (
+                  {(product.features || []).map((feature) => (
                     <span key={feature} className="rounded-full bg-blush px-4 py-2 text-sm text-ink dark:bg-slate-800 dark:text-slate-100">
                       {feature}
                     </span>
@@ -186,7 +191,7 @@ const ProductPage = () => {
               <TabPanel>
                 <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
                   <div className="space-y-4">
-                    {product.reviews.map((review) => (
+                    {(product.reviews || []).map((review) => (
                       <div key={review.id} className="rounded-[1.5rem] border border-line p-5 dark:border-slate-700">
                         <div className="font-semibold text-ink dark:text-slate-100">{review.author}</div>
                         <div className="mt-1 text-sm text-roseBrown/70 dark:text-slate-400">{review.date}</div>
@@ -197,7 +202,7 @@ const ProductPage = () => {
                       </div>
                     ))}
                   </div>
-                  <form onSubmit={handleSubmit((values) => alert('Отправка отзывов временно отключена - требуется реализация в базе данных'))} className="space-y-4 rounded-[1.5rem] border border-line p-5 dark:border-slate-700">
+                  <form onSubmit={handleSubmit(() => alert('Отправка отзывов временно отключена - требуется реализация в базе данных'))} className="space-y-4 rounded-[1.5rem] border border-line p-5 dark:border-slate-700">
                     <h3 className="text-xl font-semibold text-ink dark:text-slate-100">Добавить отзыв</h3>
                     <input
                       {...register('author')}

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabaseClient.js';
 
-export const useAdminStore = create((set, get) => ({
+export const useAdminStore = create((set) => ({
   isLoggedIn: false,
   loading: false,
   user: null,

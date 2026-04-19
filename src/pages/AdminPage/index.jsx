@@ -49,7 +49,6 @@ const AdminPage = () => {
   const [orderSearch, setOrderSearch] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [catalogConfig, setCatalogConfig] = useState(null);
-  const [editingCatalog, setEditingCatalog] = useState(null);
 
   const loginForm = useForm({
     resolver: yupResolver(loginSchema),
@@ -228,9 +227,11 @@ const AdminPage = () => {
             is_limited_edition: product.availability?.is_limited_edition ?? false
           },
           description_ru: product.description_ru || '',
-          fragrance_notes: product.attributes ? product.attributes.split(',').map(s => s.trim()).filter(Boolean) : [],
-          category_path: product.category_path ? product.category_path.split(',').map(s => s.trim()).filter(Boolean) : [],
-          actions: product.actions ? product.actions.split(',').map(s => s.trim()).filter(Boolean) : [],
+          fragrance_notes: product.attributes ? product.attributes.split(',').map((s) => s.trim()).filter(Boolean) : [],
+          category_path: product.category_path
+            ? product.category_path.split(',').map((name) => ({ name_ru: name.trim() })).filter((item) => item.name_ru)
+            : [],
+          actions: product.actions ? product.actions.split(',').map((s) => s.trim()).filter(Boolean) : [],
           seo: {
             keywords_ru: [product.name, product.brand_line, product.type].filter(Boolean),
             keywords_uz: [product.name, product.brand_line, product.type].filter(Boolean)
@@ -243,7 +244,7 @@ const AdminPage = () => {
         });
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('products')
         .insert([{ catalog: processedData }])
         .select();
@@ -460,13 +461,6 @@ const AdminPage = () => {
                             </p>
                           </div>
                           <div className="flex space-x-2">
-                            <Button
-                              onClick={() => setEditingCatalog(product)}
-                              variant="outline"
-                              size="sm"
-                            >
-                              Редактировать
-                            </Button>
                             <Button
                               onClick={() => deleteCatalog(product.id)}
                               variant="outline"
