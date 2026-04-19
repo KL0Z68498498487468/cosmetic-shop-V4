@@ -15,13 +15,6 @@ const loginSchema = yup.object({
   password: yup.string().required('Введите пароль')
 });
 
-const ADMIN_CATALOG_CONFIG = {
-  number: '01',
-  year: new Date().getFullYear(),
-  country: 'UZ',
-  currency: 'UZS'
-};
-
 const productSchema = yup.object({
   products: yup.array().of(
     yup.object({
@@ -55,6 +48,7 @@ const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const [orderSearch, setOrderSearch] = useState('');
   const [showDetails, setShowDetails] = useState(false);
+  const [catalogConfig, setCatalogConfig] = useState(null);
   const [editingCatalog, setEditingCatalog] = useState(null);
 
   const loginForm = useForm({
@@ -123,6 +117,7 @@ const AdminPage = () => {
     if (isLoggedIn) {
       loadOrders();
       loadProducts();
+      loadCatalogConfig();
     }
   }, [isLoggedIn]);
 
@@ -166,14 +161,44 @@ const AdminPage = () => {
     }
   };
 
+  const loadCatalogConfig = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('admin_settings')
+        .select('campaign_number, campaign_year, campaign_country, campaign_currency')
+        .single();
+
+      if (error) {
+        if (error.code !== 'PGRST116') {
+          console.error('Error loading catalog config:', error);
+        }
+        return;
+      }
+
+      setCatalogConfig({
+        number: data.campaign_number,
+        year: data.campaign_year,
+        country: data.campaign_country,
+        currency: data.campaign_currency
+      });
+    } catch (err) {
+      console.error('Error loading catalog config:', err);
+    }
+  };
+
   const onLoginSubmit = async (values) => {
     await login(values);
   };
 
   const onProductSubmit = async (values) => {
     try {
+      if (!catalogConfig) {
+        toast.error('Не удалось загрузить настройки кампании. Сначала заполните admin_settings в Supabase.');
+        return;
+      }
+
       const processedData = {
-        campaign: ADMIN_CATALOG_CONFIG,
+        campaign: catalogConfig,
         products: []
       };
 
@@ -481,38 +506,6 @@ const AdminPage = () => {
 
               <div className="surface-card p-6 mb-6">
                 <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-6">
-                  {/* Campaign Section */}
-                  <div className="border-b pb-4">
-                    <h4 className="text-lg font-semibold mb-3">Кампания</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Input
-                        label="Номер кампании"
-                        placeholder="05"
-                        error={productForm.formState.errors.campaign?.number?.message}
-                        {...productForm.register('campaign.number')}
-                      />
-                      <Input
-                        label="Год"
-                        type="number"
-                        placeholder="2026"
-                        error={productForm.formState.errors.campaign?.year?.message}
-                        {...productForm.register('campaign.year')}
-                      />
-                      <Input
-                        label="Страна"
-                        placeholder="UZ"
-                        error={productForm.formState.errors.campaign?.country?.message}
-                        {...productForm.register('campaign.country')}
-                      />
-                      <Input
-                        label="Валюта"
-                        placeholder="UZS"
-                        error={productForm.formState.errors.campaign?.currency?.message}
-                        {...productForm.register('campaign.currency')}
-                      />
-                    </div>
-                  </div>
-
                   {/* Products Section */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
