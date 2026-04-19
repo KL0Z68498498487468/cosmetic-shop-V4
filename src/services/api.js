@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import { blogPosts } from '@/data/blogPosts.js';
 import { products } from '@/data/products.js';
 import { createDelay } from '@/utils/helpers.js';
+import { supabase } from '@/lib/supabaseClient.js';
 
 export const api = axios.create({
   baseURL: '/api'
@@ -11,7 +12,53 @@ export const api = axios.create({
 let localProducts = [...products];
 
 export const fetchProducts = async () => {
-  return createDelay(localProducts, 450);
+  try {
+    // Сначала попробуем загрузить из Supabase
+    const { data, error } = await supabase
+      .from('products')
+      .select('catalog');
+
+    if (error) {
+      console.error('Error fetching from Supabase:', error);
+      // Fallback to local products
+      return createDelay(localProducts, 450);
+    }
+
+    if (data && data.length > 0) {
+      // Преобразуем данные из Supabase в формат products
+      const supabaseProducts = data.flatMap(item => 
+        item.catalog.products.map(product => ({
+          id: product.id,
+          slug: product.name_ru.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+          brand: product.brand_line,
+          name: product.name_ru,
+          category: product.category_path?.[0]?.name_ru || 'cosmetics',
+          type: product.type,
+          price: product.pricing.premier_price || product.pricing.regular_price,
+          oldPrice: product.pricing.discount_percent > 0 ? product.pricing.regular_price : null,
+          rating: 4.5, // Default rating
+          reviewsCount: 0,
+          inStock: product.availability.in_stock,
+          isNew: product.is_new,
+          discountPercent: product.pricing.discount_percent,
+          description: product.description_ru,
+          image: product.images.primary,
+          gallery: [product.images.primary, product.images.secondary].filter(Boolean),
+          volumeOptions: [product.volume],
+          selectedVariant: product.volume,
+          relatedIds: [],
+          bundleIds: product.actions?.filter(a => a.type === 'bundle_promotion').map(a => a.target_product_id) || []
+        }))
+      );
+      return createDelay(supabaseProducts, 450);
+    }
+
+    // Fallback to local products
+    return createDelay(localProducts, 450);
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    return createDelay(localProducts, 450);
+  }
 };
 
 export const fetchProductBySlug = async (slug) => {

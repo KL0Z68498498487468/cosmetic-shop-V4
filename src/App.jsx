@@ -9,10 +9,8 @@ const CatalogPage = lazy(() => import('@/pages/CatalogPage/index.jsx'));
 const ProductPage = lazy(() => import('@/pages/ProductPage/index.jsx'));
 const CartPage = lazy(() => import('@/pages/CartPage/index.jsx'));
 const WishlistPage = lazy(() => import('@/pages/WishlistPage/index.jsx'));
-const ProfilePage = lazy(() => import('@/pages/ProfilePage/index.jsx'));
 const CheckoutPage = lazy(() => import('@/pages/CheckoutPage/index.jsx'));
-const LoginPage = lazy(() => import('@/pages/LoginPage/index.jsx'));
-const RegisterPage = lazy(() => import('@/pages/RegisterPage/index.jsx'));
+const AdminPage = lazy(() => import('@/pages/AdminPage/index.jsx'));
 const AboutPage = lazy(() => import('@/pages/AboutPage/index.jsx'));
 const DeliveryPage = lazy(() => import('@/pages/DeliveryPage/index.jsx'));
 const ContactsPage = lazy(() => import('@/pages/ContactsPage/index.jsx'));
@@ -20,7 +18,6 @@ const BlogPage = lazy(() => import('@/pages/BlogPage/index.jsx'));
 const BlogPostPage = lazy(() => import('@/pages/BlogPostPage/index.jsx'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage/index.jsx'));
 const ServerErrorPage = lazy(() => import('@/pages/ServerErrorPage/index.jsx'));
-const ProtectedRoute = lazy(() => import('@/components/common/ProtectedRoute/index.jsx'));
 
 const App = () => {
   return (
@@ -50,17 +47,8 @@ const App = () => {
             <Route path="/catalog/:slug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/admin" element={<AdminPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/delivery" element={<DeliveryPage />} />
             <Route path="/contacts" element={<ContactsPage />} />

@@ -1,12 +1,36 @@
-# React + Vite
+# Lumina Beauty Store
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Косметический магазин на React + Vite.
 
-Currently, two official plugins are available:
+## Особенности
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Анонимные заказы (без регистрации пользователей)
+- Админ-панель для просмотра заказов
+- Интеграция с Supabase для хранения данных
 
-## Expanding the ESLint configuration
+## Настройка
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Установите зависимости:
+   ```bash
+   npm install
+   ```
+
+2. Настройте переменные окружения в `.env`:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+3. Создайте таблицу `orders` в Supabase, выполнив SQL из `create_orders_table.sql`
+
+4. Запустите проект:
+   ```bash
+   npm run dev
+   ```
+
+## Админ-панель
+
+- URL: `/admin`
+- Авторизация через Supabase Auth (нужен аккаунт администратора в Supabase)
+
+В админке можно просмотреть все оформленные заказы и управлять каталогами товаров.

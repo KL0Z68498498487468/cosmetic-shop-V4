@@ -2,6 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
+import toast from 'react-hot-toast';
 import Seo from '@/components/common/Seo/index.jsx';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
 import Button from '@/components/common/Button/index.jsx';
@@ -9,6 +10,7 @@ import Input from '@/components/common/Input/index.jsx';
 import useCart from '@/hooks/useCart.js';
 import useProducts from '@/hooks/useProducts.js';
 import { formatPrice } from '@/utils/formatPrice.js';
+import { supabase } from '@/lib/supabaseClient.js';
 
 const schema = yup.object({
   name: yup.string().required('Введите имя'),
@@ -68,9 +70,40 @@ const CheckoutPage = () => {
             <h1 className="mt-3 section-title">{stepTitle}</h1>
 
             <form
-              onSubmit={handleSubmit(() => {
-                clearCart();
-                setStep(3);
+              onSubmit={handleSubmit(async (values) => {
+                try {
+                  // Сохранить заказ в Supabase
+                  const orderData = {
+                    name: values.name,
+                    phone: values.phone,
+                    email: values.email,
+                    delivery: values.delivery,
+                    payment: values.payment,
+                    items: items.map(item => ({
+                      productId: item.productId,
+                      variant: item.variant,
+                      quantity: item.quantity,
+                      price: item.product.price
+                    })),
+                    total: total,
+                    created_at: new Date().toISOString()
+                  };
+
+                  const { error } = await supabase.from('orders').insert([orderData]);
+
+                  if (error) {
+                    console.error('Error saving order:', error);
+                    toast.error('Ошибка при сохранении заказа');
+                    return;
+                  }
+
+                  clearCart();
+                  setStep(3);
+                  toast.success('Заказ оформлен!');
+                } catch (err) {
+                  console.error('Error:', err);
+                  toast.error('Ошибка при оформлении заказа');
+                }
               })}
               className="mt-8 space-y-5"
             >
