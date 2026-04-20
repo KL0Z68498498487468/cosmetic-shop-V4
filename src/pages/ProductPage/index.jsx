@@ -1,18 +1,20 @@
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { SwiperSlide } from 'swiper/react';
 import { FiHeart, FiShoppingBag } from 'react-icons/fi';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import Seo from '@/components/common/Seo/index.jsx';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
 import Button from '@/components/common/Button/index.jsx';
+import Modal from '@/components/common/Modal/index.jsx';
 import Rating from '@/components/product/Rating/index.jsx';
 import ProductCard from '@/components/product/ProductCard/index.jsx';
 import Carousel from '@/components/ui/Carousel/index.jsx';
 import SectionHeading from '@/components/ui/SectionHeading/index.jsx';
-import { fetchProductBySlug, fetchProducts } from '@/services/api.js';
+import { fetchProductBySlug, fetchProducts, sendTelegramOrder, submitReview } from '@/services/api.js';
 import { queryKeys } from '@/services/queryKeys.js';
 import { useCartStore } from '@/store/cartStore.js';
 import { useWishlistStore } from '@/store/wishlistStore.js';
@@ -25,6 +27,7 @@ const ProductPage = () => {
   const wishlistIds = useWishlistStore((state) => state.ids);
   const [selectedVariant, setSelectedVariant] = useState('');
   const [activeImage, setActiveImage] = useState('');
+  const [isTelegramModalOpen, setTelegramModalOpen] = useState(false);
   const { data: product } = useQuery({
     queryKey: queryKeys.product(slug),
     queryFn: () => fetchProductBySlug(slug)
@@ -33,19 +36,43 @@ const ProductPage = () => {
     queryKey: queryKeys.products,
     queryFn: fetchProducts
   });
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, reset } = useForm({
     defaultValues: { author: '', rating: 5, text: '' }
   });
+  const {
+    register: registerOrder,
+    handleSubmit: handleOrderSubmit,
+    reset: resetOrder
+  } = useForm({
+    defaultValues: { name: '', phone: '', comment: '' }
+  });
+  const queryClient = useQueryClient();
+  const currentVariant = selectedVariant || product?.selectedVariant;
 
-  // Review submission temporarily disabled - needs database implementation
-  // const mutation = useMutation({
-  //   mutationFn: (review) => submitReview({ productId: product.id, review }),
-  //   onSuccess: async () => {
-  //     await queryClient.invalidateQueries({ queryKey: queryKeys.product(slug) });
-  //     await queryClient.invalidateQueries({ queryKey: queryKeys.products });
-  //     reset();
-  //   }
-  // });
+  const mutation = useMutation({
+    mutationFn: (review) => submitReview({ productId: product?.id, review }),
+    onSuccess: async () => {
+      toast.success('Отзыв опубликован');
+      reset();
+      await queryClient.invalidateQueries({ queryKey: queryKeys.product(slug) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.products });
+    },
+    onError: () => {
+      toast.error('Не удалось отправить отзыв. Попробуйте позже.');
+    }
+  });
+
+  const orderMutation = useMutation({
+    mutationFn: (values) => sendTelegramOrder({ product, variant: currentVariant, order: values }),
+    onSuccess: () => {
+      toast.success('Заявка отправлена в Telegram');
+      resetOrder();
+      setTelegramModalOpen(false);
+    },
+    onError: () => {
+      toast.error('Не удалось отправить заявку. Попробуйте позже.');
+    }
+  });
 
   const relatedProducts = useMemo(
     () => {
@@ -67,7 +94,6 @@ const ProductPage = () => {
     return null;
   }
 
-  const currentVariant = selectedVariant || product.selectedVariant;
   const currentImage = activeImage || product.gallery?.[0] || product.image || '';
 
   return (
@@ -147,8 +173,13 @@ const ProductPage = () => {
               >
                 В корзину
               </Button>
-              <Button type="button" variant="secondary" className="flex-1">
-                Купить в один клик
+              <Button
+                type="button"
+                variant="secondary"
+                className="flex-1"
+                onClick={() => setTelegramModalOpen(true)}
+              >
+                Заказать через Telegram
               </Button>
               <Button
                 type="button"
@@ -159,6 +190,46 @@ const ProductPage = () => {
                 В избранное
               </Button>
             </div>
+            <Modal
+              isOpen={isTelegramModalOpen}
+              onClose={() => setTelegramModalOpen(false)}
+              title="Заказать через Telegram"
+            >
+              <form
+                onSubmit={handleOrderSubmit((values) => orderMutation.mutate(values))}
+                className="space-y-4"
+              >
+                <input
+                  {...registerOrder('name')}
+                  placeholder="Ваше имя"
+                  className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+                <input
+                  {...registerOrder('phone')}
+                  placeholder="Телефон"
+                  className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+                <textarea
+                  {...registerOrder('comment')}
+                  rows="4"
+                  placeholder="Комментарий к заказу"
+                  className="focus-ring w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                />
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button type="submit" className="flex-1" disabled={orderMutation.isLoading}>
+                    {orderMutation.isLoading ? 'Отправляется...' : 'Отправить заявку'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="flex-1"
+                    onClick={() => setTelegramModalOpen(false)}
+                  >
+                    Отмена
+                  </Button>
+                </div>
+              </form>
+            </Modal>
           </div>
         </div>
 
@@ -202,14 +273,23 @@ const ProductPage = () => {
                       </div>
                     ))}
                   </div>
-                  <form onSubmit={handleSubmit(() => alert('Отправка отзывов временно отключена - требуется реализация в базе данных'))} className="space-y-4 rounded-[1.5rem] border border-line p-5 dark:border-slate-700">
+                  <form
+                    onSubmit={handleSubmit((values) => {
+                      if (!product) return;
+                      mutation.mutate(values);
+                    })}
+                    className="space-y-4 rounded-[1.5rem] border border-line p-5 dark:border-slate-700"
+                  >
                     <h3 className="text-xl font-semibold text-ink dark:text-slate-100">Добавить отзыв</h3>
                     <input
                       {...register('author')}
                       placeholder="Ваше имя"
                       className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     />
-                    <select {...register('rating')} className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                    <select
+                      {...register('rating')}
+                      className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    >
                       {[5, 4, 3, 2, 1].map((value) => (
                         <option key={value} value={value}>
                           {value} звезд
@@ -222,8 +302,8 @@ const ProductPage = () => {
                       placeholder="Поделитесь впечатлениями"
                       className="focus-ring w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     />
-                    <Button type="submit" className="w-full">
-                      Отправить отзыв
+                    <Button type="submit" className="w-full" disabled={mutation.isLoading}>
+                      {mutation.isLoading ? 'Отправка...' : 'Отправить отзыв'}
                     </Button>
                   </form>
                 </div>

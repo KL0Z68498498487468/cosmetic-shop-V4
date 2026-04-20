@@ -19,6 +19,8 @@
    ```
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+   VITE_TELEGRAM_CHAT_ID=your_telegram_chat_id
    ```
 
 3. Создайте таблицу `orders` в Supabase, выполнив SQL из `create_orders_table.sql`

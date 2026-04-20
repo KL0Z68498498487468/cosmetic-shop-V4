@@ -8,6 +8,46 @@ export const api = axios.create({
   baseURL: '/api'
 });
 
+const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID;
+
+export const sendTelegramOrder = async ({ product, variant, order }) => {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    throw new Error('Telegram bot token or chat id is not configured');
+  }
+
+  const messageLines = [
+    'Новая заявка на заказ через Telegram: ✔️',
+    `Товар: ${product.name}`,
+    variant ? `Вариант: ${variant}` : null,
+    `Цена: ${product.price}`,
+    `Имя: ${order.name || 'не указано'}`,
+    `Телефон: ${order.phone || 'не указан'}`,
+    order.comment ? `Комментарий: ${order.comment}` : null,
+    `Ссылка: ${window.location.origin}/catalog/${product.slug}`
+  ].filter(Boolean);
+
+  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: messageLines.join('\n'),
+      parse_mode: 'HTML'
+    })
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || result?.ok === false) {
+    throw new Error(result?.description || 'Не удалось отправить заявку в Telegram');
+  }
+
+  return result;
+};
+
 const normalizeCategory = (categoryPath) => {
   if (!categoryPath) return 'cosmetics';
   if (Array.isArray(categoryPath) && categoryPath.length > 0) {
@@ -18,6 +58,52 @@ const normalizeCategory = (categoryPath) => {
     return first;
   }
   return categoryPath;
+};
+
+const formatProductReview = (review) => ({
+  ...review,
+  date: review.created_at ? new Date(review.created_at).toLocaleDateString('ru-RU') : review.date || ''
+});
+
+export const fetchProductReviewsById = async (productId) => {
+  if (!supabase || !productId) return [];
+
+  const { data, error } = await supabase
+    .from('product_reviews')
+    .select('id, author, rating, text, created_at')
+    .eq('product_id', productId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching product reviews from Supabase:', error);
+    return [];
+  }
+
+  return Array.isArray(data) ? data.map(formatProductReview) : [];
+};
+
+export const submitReview = async ({ productId, review }) => {
+  if (!supabase || !productId) {
+    throw new Error('Supabase не настроен или отсутствует productId');
+  }
+
+  const reviewPayload = {
+    product_id: productId,
+    author: review.author || 'Аноним',
+    rating: Number(review.rating) || 5,
+    text: review.text || ''
+  };
+
+  const { data, error } = await supabase
+    .from('product_reviews')
+    .insert([reviewPayload])
+    .select();
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.isArray(data) ? data[0] : null;
 };
 
 export const fetchProducts = async () => {
@@ -33,7 +119,6 @@ export const fetchProducts = async () => {
     }
 
     if (data && data.length > 0) {
-      // Преобразуем данные из Supabase в формат products
       const supabaseProducts = data.flatMap(item => 
         (item.catalog?.products || []).map(product => {
           const name = product.name_ru || product.name_uz || product.name || 'Product';
@@ -69,7 +154,7 @@ export const fetchProducts = async () => {
                 ? product.specifications.effect
                 : ['Основной уход'],
             composition: product.composition || product.description_ru || product.description || '',
-            reviews: Array.isArray(product.reviews) ? product.reviews : [],
+            reviews: Array.isArray(product.reviews) ? product.reviews.map(formatProductReview) : [],
             relatedIds: Array.isArray(product.relatedIds) ? product.relatedIds : [],
             bundleIds: Array.isArray(product.actions)
               ? product.actions
@@ -84,6 +169,28 @@ export const fetchProducts = async () => {
           };
         })
       );
+
+      const productIds = supabaseProducts.map((item) => item.id).filter(Boolean);
+      if (productIds.length > 0) {
+        const { data: reviewRows, error: reviewError } = await supabase
+          .from('product_reviews')
+          .select('product_id')
+          .in('product_id', productIds);
+
+        if (!reviewError && Array.isArray(reviewRows)) {
+          const reviewCounts = reviewRows.reduce((acc, row) => {
+            const key = row.product_id;
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+          }, {});
+
+          return supabaseProducts.map((product) => ({
+            ...product,
+            reviewsCount: reviewCounts[product.id] ?? product.reviewsCount ?? 0
+          }));
+        }
+      }
+
       return supabaseProducts;
     }
 
@@ -95,7 +202,6 @@ export const fetchProducts = async () => {
 };
 
 export const fetchProductBySlug = async (slug) => {
-  // Для простоты, получаем все продукты и ищем по slug
   const products = await fetchProducts();
   const product = products.find((item) => item.slug === slug);
 
@@ -103,7 +209,18 @@ export const fetchProductBySlug = async (slug) => {
     throw new Error('Товар не найден');
   }
 
-  return product;
+  const reviews = await fetchProductReviewsById(product.id);
+  const existingReviewIds = new Set((product.reviews || []).map((review) => review.id).filter(Boolean));
+  const mergedReviews = [
+    ...(product.reviews || []),
+    ...reviews.filter((review) => !existingReviewIds.has(review.id))
+  ];
+
+  return {
+    ...product,
+    reviews: mergedReviews,
+    reviewsCount: mergedReviews.length
+  };
 };
 
 export const fetchBlogPosts = async () => createDelay(blogPosts, 300);
