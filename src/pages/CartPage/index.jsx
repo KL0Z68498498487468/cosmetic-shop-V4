@@ -1,19 +1,37 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useMutation } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import Seo from '@/components/common/Seo/index.jsx';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
 import EmptyState from '@/components/common/EmptyState/index.jsx';
 import QuantitySelector from '@/components/common/QuantitySelector/index.jsx';
 import Button from '@/components/common/Button/index.jsx';
+import Modal from '@/components/common/Modal/index.jsx';
 import useCart from '@/hooks/useCart.js';
 import useProducts from '@/hooks/useProducts.js';
+import { sendTelegramCartOrder } from '@/services/api.js';
 import { useWishlistStore } from '@/store/wishlistStore.js';
 import { formatPrice } from '@/utils/formatPrice.js';
 
 const CartPage = () => {
   const { data: products = [] } = useProducts();
-  const { items, subtotal, discount, delivery, total, promoCode, setPromoCode, updateQuantity, removeItem } =
+  const { items, subtotal, discount, delivery, total, promoCode, setPromoCode, updateQuantity, removeItem, clearCart } =
     useCart(products);
   const toggleWishlist = useWishlistStore((state) => state.toggle);
+  const [isOrderModalOpen, setOrderModalOpen] = useState(false);
+
+  const orderMutation = useMutation({
+    mutationFn: (orderData) => sendTelegramCartOrder({ cart: items, order: orderData, total }),
+    onSuccess: () => {
+      toast.success('Заказ отправлен в Telegram');
+      clearCart();
+      setOrderModalOpen(false);
+    },
+    onError: () => {
+      toast.error('Не удалось отправить заказ. Попробуйте позже.');
+    }
+  });
 
   return (
     <>
@@ -112,9 +130,21 @@ const CartPage = () => {
                   <span>{formatPrice(total)}</span>
                 </div>
               </div>
-              <Button as={Link} to="/checkout" className="mt-6 w-full">
-                Перейти к оформлению
+              <Button onClick={() => setOrderModalOpen(true)} className="mt-6 w-full">
+                Оформить заказ через Telegram
               </Button>
+
+              <Modal
+                isOpen={isOrderModalOpen}
+                onClose={() => setOrderModalOpen(false)}
+                title="Оформить заказ"
+              >
+                <OrderForm
+                  onSubmit={(data) => orderMutation.mutate(data)}
+                  isLoading={orderMutation.isLoading}
+                  onCancel={() => setOrderModalOpen(false)}
+                />
+              </Modal>
             </div>
           </div>
         )}
@@ -124,3 +154,38 @@ const CartPage = () => {
 };
 
 export default CartPage;
+
+const OrderForm = ({ onSubmit, isLoading, onCancel }) => {
+  const { register, handleSubmit } = useForm({
+    defaultValues: { name: '', phone: '', comment: '' }
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <input
+        {...register('name')}
+        placeholder="Ваше имя"
+        className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+      />
+      <input
+        {...register('phone')}
+        placeholder="Телефон"
+        className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+      />
+      <textarea
+        {...register('comment')}
+        rows="4"
+        placeholder="Комментарий к заказу"
+        className="focus-ring w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+      />
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button type="submit" className="flex-1" disabled={isLoading}>
+          {isLoading ? 'Отправляется...' : 'Отправить заказ'}
+        </Button>
+        <Button type="button" variant="ghost" className="flex-1" onClick={onCancel}>
+          Отмена
+        </Button>
+      </div>
+    </form>
+  );
+};

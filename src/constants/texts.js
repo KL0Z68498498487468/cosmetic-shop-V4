@@ -4,7 +4,6 @@ export const siteTexts = {
   nav: [
     { label: 'Каталог', to: '/catalog' },
     { label: 'О нас', to: '/about' },
-    { label: 'Доставка и оплата', to: '/delivery' },
     { label: 'Блог', to: '/blog' },
     { label: 'Контакты', to: '/contacts' }
   ],
@@ -46,7 +45,6 @@ export const siteTexts = {
       { label: 'Контакты', to: '/contacts' }
     ],
     support: [
-      { label: 'Доставка и оплата', to: '/delivery' },
       { label: 'Профиль', to: '/profile' },
       { label: 'Избранное', to: '/wishlist' }
     ]

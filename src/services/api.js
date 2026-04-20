@@ -48,6 +48,53 @@ export const sendTelegramOrder = async ({ product, variant, order }) => {
   return result;
 };
 
+export const sendTelegramCartOrder = async ({ cart, order, total }) => {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    throw new Error('Telegram bot token or chat id is not configured');
+  }
+
+  const messageLines = [
+    '🛒 Новая заявка на заказ из корзины:',
+    '',
+    '📦 Товары:'
+  ];
+
+  cart.forEach((item, index) => {
+    messageLines.push(`${index + 1}. ${item.product.name} - ${item.quantity} шт. x ${item.product.price} = ${item.total}`);
+  });
+
+  messageLines.push(
+    '',
+    `💰 Итого: ${total}`,
+    '',
+    `👤 Имя: ${order.name || 'не указано'}`,
+    `📞 Телефон: ${order.phone || 'не указан'}`,
+    order.comment ? `💬 Комментарий: ${order.comment}` : null,
+    '',
+    `🔗 Ссылка: ${window.location.origin}/cart`
+  );
+
+  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: messageLines.filter(Boolean).join('\n'),
+      parse_mode: 'HTML'
+    })
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || result?.ok === false) {
+    throw new Error(result?.description || 'Не удалось отправить заявку в Telegram');
+  }
+
+  return result;
+};
+
 const normalizeCategory = (categoryPath) => {
   if (!categoryPath) return 'cosmetics';
   if (Array.isArray(categoryPath) && categoryPath.length > 0) {

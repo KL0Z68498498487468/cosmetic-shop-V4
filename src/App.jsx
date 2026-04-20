@@ -9,10 +9,8 @@ const CatalogPage = lazy(() => import('@/pages/CatalogPage/index.jsx'));
 const ProductPage = lazy(() => import('@/pages/ProductPage/index.jsx'));
 const CartPage = lazy(() => import('@/pages/CartPage/index.jsx'));
 const WishlistPage = lazy(() => import('@/pages/WishlistPage/index.jsx'));
-const CheckoutPage = lazy(() => import('@/pages/CheckoutPage/index.jsx'));
 const AdminPage = lazy(() => import('@/pages/AdminPage/index.jsx'));
 const AboutPage = lazy(() => import('@/pages/AboutPage/index.jsx'));
-const DeliveryPage = lazy(() => import('@/pages/DeliveryPage/index.jsx'));
 const ContactsPage = lazy(() => import('@/pages/ContactsPage/index.jsx'));
 const BlogPage = lazy(() => import('@/pages/BlogPage/index.jsx'));
 const BlogPostPage = lazy(() => import('@/pages/BlogPostPage/index.jsx'));
@@ -47,10 +45,8 @@ const App = () => {
             <Route path="/catalog/:slug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/delivery" element={<DeliveryPage />} />
             <Route path="/contacts" element={<ContactsPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
