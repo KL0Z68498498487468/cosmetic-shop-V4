@@ -7,9 +7,9 @@ import {
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import Input from '@/components/common/Input/index.jsx';
 import { siteTexts } from '@/constants/texts.js';
+import useCart from '@/hooks/useCart.js';
 import useProducts from '@/hooks/useProducts.js';
 import useWishlist from '@/hooks/useWishlist.js';
-import { useCartStore } from '@/store/cartStore.js';
 import { useThemeStore } from '@/store/themeStore.js';
 
 const Header = () => {
@@ -20,9 +20,11 @@ const Header = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const deferredQuery = useDeferredValue(query);
   const { data: products = [] } = useProducts();
+  const { items: cartItems } = useCart(products);
   const { ids } = useWishlist(products);
-  const cartItemsCount = useCartStore((state) =>
-    state.items.reduce((sum, item) => sum + item.quantity, 0)
+  const cartItemsCount = useMemo(
+    () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    [cartItems]
   );
   const { isDark, toggleTheme } = useThemeStore();
 

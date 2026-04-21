@@ -16,7 +16,7 @@ import { formatPrice } from '@/utils/formatPrice.js';
 
 const CartPage = () => {
   const { data: products = [] } = useProducts();
-  const { items, subtotal, discount, delivery, total, promoCode, setPromoCode, updateQuantity, removeItem, clearCart } =
+  const { items, subtotal, delivery, total, updateQuantity, removeItem, clearCart } =
     useCart(products);
   const toggleWishlist = useWishlistStore((state) => state.toggle);
   const [isOrderModalOpen, setOrderModalOpen] = useState(false);
@@ -104,22 +104,9 @@ const CartPage = () => {
             <div className="surface-card p-6">
               <h2 className="text-2xl font-semibold text-ink dark:text-slate-100">Ваш заказ</h2>
               <div className="mt-6 space-y-4 text-sm text-roseBrown/80 dark:text-slate-300">
-                <label className="block">
-                  <span className="mb-2 block font-semibold text-ink dark:text-slate-100">Промокод</span>
-                  <input
-                    value={promoCode}
-                    onChange={(event) => setPromoCode(event.target.value)}
-                    placeholder="Например, LUMINA10"
-                    className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                  />
-                </label>
                 <div className="flex items-center justify-between">
                   <span>Сумма товаров</span>
                   <span>{formatPrice(subtotal)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Скидка</span>
-                  <span>- {formatPrice(discount)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Доставка</span>

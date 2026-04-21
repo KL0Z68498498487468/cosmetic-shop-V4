@@ -6,7 +6,6 @@ export const useCartStore = create(
   persist(
     (set, get) => ({
       items: [],
-      promoCode: '',
       addItem: (product, variant) => {
         const existingItem = get().items.find(
           (item) => item.productId === product.id && item.variant === variant
@@ -60,8 +59,15 @@ export const useCartStore = create(
         get().removeItem(productId, variant);
         toast.success('Товар перенесен в избранное');
       },
-      setPromoCode: (promoCode) => set({ promoCode }),
-      clearCart: () => set({ items: [], promoCode: '' })
+      removeUnavailableItems: (availableProductIds) => {
+        const validIds = new Set(availableProductIds);
+        const nextItems = get().items.filter((item) => validIds.has(item.productId));
+
+        if (nextItems.length !== get().items.length) {
+          set({ items: nextItems });
+        }
+      },
+      clearCart: () => set({ items: [] })
     }),
     {
       name: 'lumina-cart'

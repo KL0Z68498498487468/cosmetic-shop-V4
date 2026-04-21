@@ -164,10 +164,10 @@ const ProductPage = () => {
             <div className="mt-5 text-sm text-roseBrown/80 dark:text-slate-300">
               {product.inStock ? 'В наличии и готов к отправке' : 'Временно отсутствует'}
             </div>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Button
                 type="button"
-                className="flex-1"
+                className="w-full"
                 onClick={() => addItem(product, currentVariant)}
                 icon={<FiShoppingBag />}
               >
@@ -176,7 +176,7 @@ const ProductPage = () => {
               <Button
                 type="button"
                 variant="secondary"
-                className="flex-1"
+                className="w-full"
                 onClick={() => setTelegramModalOpen(true)}
               >
                 Заказать через Telegram
@@ -184,6 +184,7 @@ const ProductPage = () => {
               <Button
                 type="button"
                 variant="ghost"
+                className="w-full sm:col-span-2"
                 onClick={() => toggleWishlist(product.id)}
                 icon={<FiHeart className={wishlistIds.includes(product.id) ? 'fill-current' : ''} />}
               >
@@ -215,14 +216,14 @@ const ProductPage = () => {
                   placeholder="Комментарий к заказу"
                   className="focus-ring w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button type="submit" className="flex-1" disabled={orderMutation.isLoading}>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Button type="submit" className="w-full" disabled={orderMutation.isLoading}>
                     {orderMutation.isLoading ? 'Отправляется...' : 'Отправить заявку'}
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
-                    className="flex-1"
+                    className="w-full"
                     onClick={() => setTelegramModalOpen(false)}
                   >
                     Отмена

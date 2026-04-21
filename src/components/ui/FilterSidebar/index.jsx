@@ -1,7 +1,7 @@
 import Button from '@/components/common/Button/index.jsx';
 import { useFilterStore } from '@/store/filterStore.js';
 
-const FilterSidebar = ({ brands }) => {
+const FilterSidebar = ({ brands, categories = [] }) => {
   const { filters, setFilter, resetFilters } = useFilterStore();
 
   return (
@@ -26,10 +26,11 @@ const FilterSidebar = ({ brands }) => {
             className="focus-ring h-11 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           >
             <option value="">Все категории</option>
-            <option value="skincare">Уход</option>
-            <option value="makeup">Макияж</option>
-            <option value="perfume">Парфюм</option>
-            <option value="hair">Волосы</option>
+            {categories.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label}
+              </option>
+            ))}
           </select>
         </div>
 

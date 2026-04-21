@@ -23,16 +23,16 @@ const Button = ({
 }) => {
   const sizeClass =
     size === 'sm'
-      ? 'h-10 px-4 text-sm'
+      ? 'min-h-10 px-4 py-2 text-sm'
       : size === 'lg'
-        ? 'h-14 px-7 text-base'
-        : 'h-12 px-5 text-sm';
+        ? 'min-h-14 px-7 py-3 text-base'
+        : 'min-h-12 px-5 py-3 text-sm';
 
   return createElement(
     Component,
     {
       className: cn(
-        'focus-ring inline-flex items-center justify-center gap-2 rounded-full border font-semibold transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-60',
+        'focus-ring inline-flex min-w-0 flex-wrap items-center justify-center gap-2 rounded-full border text-center font-semibold leading-tight transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-60',
         sizeClass,
         styles[variant],
         className

@@ -112,6 +112,31 @@ const formatProductReview = (review) => ({
   date: review.created_at ? new Date(review.created_at).toLocaleDateString('ru-RU') : review.date || ''
 });
 
+const normalizeReviewRating = (rating) => {
+  const value = Number(rating);
+  return Number.isFinite(value) && value > 0 ? value : null;
+};
+
+const buildRatingSummary = (reviews = [], fallbackRating = 0) => {
+  const ratings = reviews
+    .map((review) => normalizeReviewRating(review?.rating))
+    .filter((rating) => rating !== null);
+
+  if (!ratings.length) {
+    return {
+      rating: normalizeReviewRating(fallbackRating) ?? 0,
+      reviewsCount: 0
+    };
+  }
+
+  const averageRating = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+
+  return {
+    rating: Number(averageRating.toFixed(1)),
+    reviewsCount: ratings.length
+  };
+};
+
 export const fetchProductReviewsById = async (productId) => {
   if (!supabase || !productId) return [];
 
@@ -172,6 +197,8 @@ export const fetchProducts = async () => {
           const slugBase = String(name).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
           const gallery = [product.images?.primary, product.images?.secondary].filter(Boolean);
           const pricing = product.pricing || {};
+          const baseReviews = Array.isArray(product.reviews) ? product.reviews.map(formatProductReview) : [];
+          const baseRatingSummary = buildRatingSummary(baseReviews, product.rating);
 
           return {
             id: product.id || nanoid(),
@@ -182,8 +209,8 @@ export const fetchProducts = async () => {
             type: product.type || '',
             price: pricing.premier_price ?? pricing.regular_price ?? 0,
             oldPrice: pricing.discount_percent > 0 ? pricing.regular_price : null,
-            rating: product.rating ?? 4.5,
-            reviewsCount: product.reviewsCount ?? 0,
+            rating: baseRatingSummary.rating,
+            reviewsCount: baseRatingSummary.reviewsCount,
             inStock: product.availability?.in_stock ?? true,
             isNew: product.is_new ?? false,
             discountPercent: pricing.discount_percent ?? 0,
@@ -201,7 +228,7 @@ export const fetchProducts = async () => {
                 ? product.specifications.effect
                 : ['Основной уход'],
             composition: product.composition || product.description_ru || product.description || '',
-            reviews: Array.isArray(product.reviews) ? product.reviews.map(formatProductReview) : [],
+            reviews: baseReviews,
             relatedIds: Array.isArray(product.relatedIds) ? product.relatedIds : [],
             bundleIds: Array.isArray(product.actions)
               ? product.actions
@@ -221,19 +248,22 @@ export const fetchProducts = async () => {
       if (productIds.length > 0) {
         const { data: reviewRows, error: reviewError } = await supabase
           .from('product_reviews')
-          .select('product_id')
+          .select('product_id, rating')
           .in('product_id', productIds);
 
         if (!reviewError && Array.isArray(reviewRows)) {
-          const reviewCounts = reviewRows.reduce((acc, row) => {
+          const reviewsByProductId = reviewRows.reduce((acc, row) => {
             const key = row.product_id;
-            acc[key] = (acc[key] || 0) + 1;
+            acc[key] = [...(acc[key] || []), row];
             return acc;
           }, {});
 
           return supabaseProducts.map((product) => ({
             ...product,
-            reviewsCount: reviewCounts[product.id] ?? product.reviewsCount ?? 0
+            ...buildRatingSummary(
+              [...(product.reviews || []), ...(reviewsByProductId[product.id] || [])],
+              product.rating
+            )
           }));
         }
       }
@@ -266,7 +296,7 @@ export const fetchProductBySlug = async (slug) => {
   return {
     ...product,
     reviews: mergedReviews,
-    reviewsCount: mergedReviews.length
+    ...buildRatingSummary(mergedReviews, product.rating)
   };
 };
 

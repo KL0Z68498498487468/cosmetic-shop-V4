@@ -12,6 +12,13 @@ import useProducts from '@/hooks/useProducts.js';
 import { useFilterStore } from '@/store/filterStore.js';
 import { filterProducts, sortProducts } from '@/utils/filterProducts.js';
 
+const formatCategoryLabel = (category) =>
+  String(category)
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
 const CatalogPage = () => {
   const { data: products = [], isLoading } = useProducts();
   const { filters, setFilter } = useFilterStore();
@@ -32,6 +39,15 @@ const CatalogPage = () => {
   const filteredProducts = useMemo(() => {
     return sortProducts(filterProducts(products, filters), filters.sortBy);
   }, [filters, products]);
+
+  const categoryOptions = useMemo(() => {
+    return [...new Set(products.map((product) => product.category).filter(Boolean))]
+      .sort((first, second) => first.localeCompare(second))
+      .map((category) => ({
+        value: category,
+        label: formatCategoryLabel(category)
+      }));
+  }, [products]);
 
   useEffect(() => {
     setVisibleCount(8);
@@ -67,7 +83,10 @@ const CatalogPage = () => {
         <AnimatedSection className="surface-card mt-6 p-8">
           <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
             <div>
-              <FilterSidebar brands={[...new Set(products.map((product) => product.brand))]} />
+              <FilterSidebar
+                brands={[...new Set(products.map((product) => product.brand).filter(Boolean))]}
+                categories={categoryOptions}
+              />
             </div>
 
             <div>
