@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import AdminRoute from '@/components/auth/AdminRoute/index.jsx';
 import Seo from '@/components/common/Seo/index.jsx';
 import Layout from '@/components/layout/Layout/index.jsx';
 import AnimatedSection from '@/components/ui/AnimatedSection/index.jsx';
@@ -45,7 +46,14 @@ const App = () => {
             <Route path="/catalog/:slug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
-            <Route path="/admin" element={<AdminPage />} />
+            <Route
+              path="/admin"
+              element={(
+                <AdminRoute>
+                  <AdminPage />
+                </AdminRoute>
+              )}
+            />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contacts" element={<ContactsPage />} />
             <Route path="/blog" element={<BlogPage />} />

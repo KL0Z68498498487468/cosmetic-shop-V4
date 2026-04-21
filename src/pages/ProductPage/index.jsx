@@ -27,6 +27,7 @@ const ProductPage = () => {
   const wishlistIds = useWishlistStore((state) => state.ids);
   const [selectedVariant, setSelectedVariant] = useState('');
   const [activeImage, setActiveImage] = useState('');
+  const [isImagePreviewOpen, setImagePreviewOpen] = useState(false);
   const [isTelegramModalOpen, setTelegramModalOpen] = useState(false);
   const { data: product } = useQuery({
     queryKey: queryKeys.product(slug),
@@ -111,7 +112,17 @@ const ProductPage = () => {
         <div className="mt-6 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <div className="surface-card overflow-hidden p-3 sm:p-4">
-              <img src={currentImage} alt={product.name} className="h-[340px] w-full rounded-[1.5rem] object-cover sm:h-[440px] sm:rounded-[2rem] lg:h-[520px]" />
+              <button
+                type="button"
+                onClick={() => setImagePreviewOpen(true)}
+                className="group block w-full overflow-hidden rounded-[1.5rem] sm:rounded-[2rem]"
+              >
+                <img
+                  src={currentImage}
+                  alt={product.name}
+                  className="h-[340px] w-full cursor-zoom-in object-cover transition duration-300 group-hover:scale-[1.02] sm:h-[440px] lg:h-[520px]"
+                />
+              </button>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-4">
               {(product.gallery || []).map((image) => (
@@ -191,6 +202,18 @@ const ProductPage = () => {
                 В избранное
               </Button>
             </div>
+            <Modal
+              isOpen={isImagePreviewOpen}
+              onClose={() => setImagePreviewOpen(false)}
+            >
+              <div className="-m-2 sm:-m-4">
+                <img
+                  src={currentImage}
+                  alt={product.name}
+                  className="max-h-[80vh] w-full rounded-[1.5rem] object-contain"
+                />
+              </div>
+            </Modal>
             <Modal
               isOpen={isTelegramModalOpen}
               onClose={() => setTelegramModalOpen(false)}
