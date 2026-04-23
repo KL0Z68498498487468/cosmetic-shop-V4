@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -40,15 +40,105 @@ const productSchema = yup.object({
   ).min(1, 'Добавьте хотя бы один товар')
 });
 
+/* ── Drag-and-drop зона для загрузки нескольких фото ─────────── */
+const ImageDropZone = ({ files, onChange }) => {
+  const inputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const addFiles = useCallback((newFiles) => {
+    const validFiles = Array.from(newFiles).filter((f) => f.type.startsWith('image/'));
+    if (!validFiles.length) return;
+    onChange((prev) => [...prev, ...validFiles]);
+  }, [onChange]);
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    addFiles(e.dataTransfer.files);
+  };
+
+  const removeFile = (idx) => {
+    onChange((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Drop zone */}
+      <div
+        onClick={() => inputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
+        className={`relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
+          isDragging
+            ? 'border-accent bg-accent/5'
+            : 'border-line hover:border-accent/60 dark:border-slate-700'
+        }`}
+      >
+        <div className="text-3xl">📷</div>
+        <p className="text-sm font-medium text-ink dark:text-slate-200">
+          Перетащите фото сюда или нажмите для выбора
+        </p>
+        <p className="text-xs text-roseBrown/60 dark:text-slate-400">
+          Первое фото — главное, остальные — галерея
+        </p>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          onChange={(e) => addFiles(e.target.files)}
+        />
+      </div>
+
+      {/* Preview thumbnails */}
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {files.map((file, idx) => (
+            <div key={idx} className="relative">
+              <img
+                src={URL.createObjectURL(file)}
+                alt={`фото ${idx + 1}`}
+                className={`h-24 w-24 rounded-xl object-cover ring-2 ${
+                  idx === 0 ? 'ring-accent' : 'ring-line dark:ring-slate-700'
+                }`}
+              />
+              {idx === 0 && (
+                <span className="absolute -top-2 left-1 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-white">
+                  Главное
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => removeFile(idx)}
+                className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] text-white shadow hover:bg-red-600"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const AdminPage = () => {
   const { isLoggedIn, login, logout, loading, init } = useAdminStore();
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  // productImages[index] = File[] (первый файл — primary, остальные — gallery)
   const [productImages, setProductImages] = useState({});
   const [activeTab, setActiveTab] = useState('orders');
   const [orderSearch, setOrderSearch] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [catalogConfig, setCatalogConfig] = useState(null);
+
+  // Редактирование товара
+  const [editingItem, setEditingItem] = useState(null); // { catalogId, productIdx, product }
+  const [editImages, setEditImages] = useState([]);     // Новые File[] для замены фото
+  const [isEditSaving, setIsEditSaving] = useState(false);
 
   const loginForm = useForm({
     resolver: yupResolver(loginSchema),
@@ -79,13 +169,19 @@ const AdminPage = () => {
     name: 'products'
   });
 
-  const handleProductImageChange = (index, type, file) => {
+  const editForm = useForm({
+    defaultValues: {
+      name: '', brand_line: '', type: '', volume: '',
+      regular_price: 0, discount_percent: 0,
+      description_ru: '', category_path: '',
+      in_stock: true, top_day: false, top_week: false
+    }
+  });
+
+  const handleProductImagesChange = (index, updater) => {
     setProductImages((prev) => ({
       ...prev,
-      [index]: {
-        ...prev[index],
-        [type]: file
-      }
+      [index]: typeof updater === 'function' ? updater(prev[index] || []) : updater
     }));
   };
 
@@ -204,8 +300,15 @@ const AdminPage = () => {
       for (const [index, product] of values.products.entries()) {
         const regularPrice = Number(product.pricing.regular_price) || 0;
         const premierPrice = regularPrice;
-        const imageFile = productImages[index]?.primary;
-        const imageUrl = imageFile ? await uploadProductImage(imageFile) : product.images.primary || '';
+        const imageFiles = productImages[index] || [];
+
+        // Загружаем все фото параллельно
+        const uploadedUrls = imageFiles.length > 0
+          ? await Promise.all(imageFiles.map((f) => uploadProductImage(f)))
+          : [];
+
+        const imageUrl = uploadedUrls[0] || product.images.primary || '';
+        const galleryUrls = uploadedUrls.slice(1);
 
         processedData.products.push({
           ...product,
@@ -214,7 +317,8 @@ const AdminPage = () => {
           name_uz: product.name,
           images: {
             primary: imageUrl,
-            secondary: ''
+            secondary: galleryUrls[0] || '',
+            gallery: galleryUrls
           },
           pricing: {
             regular_price: regularPrice,
@@ -284,6 +388,88 @@ const AdminPage = () => {
     } catch (err) {
       console.error('Error:', err);
       toast.error('Ошибка при удалении');
+    }
+  };
+
+  /* ─── Редактирование товара ───────────────────────────── */
+  const openEditProduct = (catalogId, productIdx, product) => {
+    setEditingItem({ catalogId, productIdx, product });
+    setEditImages([]);
+    editForm.reset({
+      name:            product.name_ru || product.name || '',
+      brand_line:      product.brand_line || '',
+      type:            product.type || '',
+      volume:          product.volume || '',
+      regular_price:   product.pricing?.regular_price || 0,
+      discount_percent: product.pricing?.discount_percent || 0,
+      description_ru:  product.description_ru || '',
+      category_path:   Array.isArray(product.category_path)
+        ? product.category_path.map((c) => c.name_ru || c).join(', ')
+        : product.category_path || '',
+      in_stock:  product.availability?.in_stock ?? true,
+      top_day:   product.top_day  ?? false,
+      top_week:  product.top_week ?? false
+    });
+  };
+
+  const saveEditProduct = async (values) => {
+    if (!editingItem) return;
+    setIsEditSaving(true);
+    try {
+      const catalogRow = products.find((p) => p.id === editingItem.catalogId);
+      if (!catalogRow) throw new Error('Каталог не найден');
+
+      // Загрузка новых фото если выбраны
+      let uploadedUrls = [];
+      if (editImages.length > 0) {
+        uploadedUrls = await Promise.all(editImages.map((f) => uploadProductImage(f)));
+      }
+
+      const old = editingItem.product;
+      const updatedProduct = {
+        ...old,
+        name_ru:    values.name,
+        name_uz:    values.name,
+        name:       values.name,
+        brand_line: values.brand_line,
+        type:       values.type,
+        volume:     values.volume,
+        description_ru: values.description_ru,
+        pricing: {
+          ...old.pricing,
+          regular_price:   Number(values.regular_price) || 0,
+          premier_price:   Number(values.regular_price) || 0,
+          discount_percent: Number(values.discount_percent) || 0
+        },
+        availability: { ...old.availability, in_stock: values.in_stock },
+        top_day:  values.top_day,
+        top_week: values.top_week,
+        category_path: values.category_path
+          ? values.category_path.split(',').map((s) => ({ name_ru: s.trim() })).filter((i) => i.name_ru)
+          : old.category_path || [],
+        images: uploadedUrls.length > 0
+          ? { primary: uploadedUrls[0], secondary: uploadedUrls[1] || old.images?.secondary || '', gallery: uploadedUrls.slice(1) }
+          : old.images
+      };
+
+      const updatedCatalogProducts = [...catalogRow.catalog.products];
+      updatedCatalogProducts[editingItem.productIdx] = updatedProduct;
+
+      const { error } = await supabase
+        .from('products')
+        .update({ catalog: { ...catalogRow.catalog, products: updatedCatalogProducts } })
+        .eq('id', editingItem.catalogId);
+
+      if (error) throw error;
+
+      toast.success('Товар обновлён');
+      setEditingItem(null);
+      loadProducts();
+    } catch (err) {
+      console.error('Error saving edit:', err);
+      toast.error('Ошибка при сохранении');
+    } finally {
+      setIsEditSaving(false);
     }
   };
 
@@ -475,11 +661,35 @@ const AdminPage = () => {
                           <h5 className="font-semibold mb-2">Товары:</h5>
                           <div className="space-y-2">
                             {product.catalog.products.map((item, index) => (
-                              <div key={index} className="text-sm border-l-2 border-roseBrown pl-3">
-                                <p><strong>ID:</strong> {item.id}</p>
-                                <p><strong>Название (RU):</strong> {item.name_ru}</p>
-                                <p><strong>Бренд:</strong> {item.brand_line}</p>
-                                <p><strong>Цена:</strong> {item.pricing.regular_price} {product.catalog.campaign.currency}</p>
+                              <div key={index} className="flex items-start gap-3 rounded-xl border border-line p-3 dark:border-slate-700">
+                                {/* Миниатюра фото */}
+                                {item.images?.primary && (
+                                  <img
+                                    src={item.images.primary}
+                                    alt={item.name_ru}
+                                    className="h-16 w-16 flex-shrink-0 rounded-lg object-cover"
+                                  />
+                                )}
+                                {/* Инфо */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-semibold text-ink dark:text-slate-100 truncate">{item.name_ru}</p>
+                                  <p className="text-xs text-muted">{item.brand_line}</p>
+                                  <p className="text-xs text-muted">{item.pricing?.regular_price?.toLocaleString()} {product.catalog.campaign.currency}</p>
+                                  {(item.top_day || item.top_week) && (
+                                    <div className="mt-1 flex gap-1">
+                                      {item.top_day  && <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent">Топ дня</span>}
+                                      {item.top_week && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-600 dark:bg-violet-900/30 dark:text-violet-300">Топ недели</span>}
+                                    </div>
+                                  )}
+                                </div>
+                                {/* Кнопка */}
+                                <button
+                                  type="button"
+                                  onClick={() => openEditProduct(product.id, index, item)}
+                                  className="flex-shrink-0 rounded-lg border border-line px-3 py-1.5 text-xs font-medium hover:border-accent hover:text-accent dark:border-slate-700 dark:text-slate-300 transition"
+                                >
+                                  Редактировать
+                                </button>
                               </div>
                             ))}
                           </div>
@@ -550,15 +760,10 @@ const AdminPage = () => {
                           />
                           <div className="md:col-span-2">
                             <label className="block text-sm font-medium mb-2">Фото товара</label>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="w-full text-sm text-slate-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-roseBrown file:text-white"
-                              onChange={(event) => {
-                                handleProductImageChange(index, 'primary', event.target.files?.[0]);
-                              }}
+                            <ImageDropZone
+                              files={productImages[index] || []}
+                              onChange={(updater) => handleProductImagesChange(index, updater)}
                             />
-                            <p className="text-xs text-muted mt-2">Загрузите одно главное фото.</p>
                           </div>
                           <Input
                             label="Цена"
@@ -656,8 +861,118 @@ const AdminPage = () => {
           )}
         </div>
       </div>
+      {/* ══ ПАНЕЛЬ РЕДАКТИРОВАНИЯ ТОВАРА ══════════════════════════ */}
+      {editingItem && (
+        <>
+          {/* Оверлей */}
+          <div
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            onClick={() => setEditingItem(null)}
+          />
+          {/* Drawer */}
+          <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col bg-white shadow-2xl dark:bg-slate-900 overflow-y-auto">
+            {/* Шапка */}
+            <div className="flex items-center justify-between border-b border-line px-6 py-4 dark:border-slate-700">
+              <h3 className="text-lg font-semibold text-ink dark:text-slate-100">
+                Редактировать товар
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingItem(null)}
+                className="text-2xl leading-none text-roseBrown/50 hover:text-roseBrown dark:text-slate-400"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Форма */}
+            <form
+              onSubmit={editForm.handleSubmit(saveEditProduct)}
+              className="flex flex-1 flex-col gap-5 px-6 py-6"
+            >
+              {/* Существующие фото */}
+              {editingItem.product.images?.primary && (
+                <div>
+                  <p className="mb-2 text-sm font-medium text-ink dark:text-slate-200">Текущие фото</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[editingItem.product.images.primary, ...(editingItem.product.images.gallery || [])].filter(Boolean).map((url, i) => (
+                      <img key={i} src={url} alt={`фото ${i + 1}`} className="h-20 w-20 rounded-xl object-cover" />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Новые фото (заменяют текущие) */}
+              <div>
+                <p className="mb-2 text-sm font-medium text-ink dark:text-slate-200">
+                  Заменить фото <span className="text-xs text-roseBrown/60">(оставьте пустым — сохранятся старые)</span>
+                </p>
+                <ImageDropZone
+                  files={editImages}
+                  onChange={setEditImages}
+                />
+              </div>
+
+              <Input label="Название" {...editForm.register('name')} />
+              <Input label="Бренд" {...editForm.register('brand_line')} />
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Тип" {...editForm.register('type')} />
+                <Input label="Объём" {...editForm.register('volume')} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Цена" type="number" {...editForm.register('regular_price')} />
+                <Input label="Скидка %" type="number" {...editForm.register('discount_percent')} />
+              </div>
+
+              <Input label="Категории (через запятую)" {...editForm.register('category_path')} />
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-ink dark:text-slate-200">Описание</label>
+                <textarea
+                  rows={4}
+                  className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                  {...editForm.register('description_ru')}
+                />
+              </div>
+
+              {/* Флаги слайдеров */}
+              <div className="rounded-2xl border border-line p-4 dark:border-slate-700 space-y-3">
+                <p className="text-sm font-semibold text-ink dark:text-slate-200">Слайдеры</p>
+                <label className="flex cursor-pointer items-center gap-3">
+                  <input type="checkbox" className="h-4 w-4 accent-accent" {...editForm.register('in_stock')} />
+                  <span className="text-sm text-ink dark:text-slate-300">В наличии</span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-3">
+                  <input type="checkbox" className="h-4 w-4 accent-accent" {...editForm.register('top_day')} />
+                  <span className="text-sm text-ink dark:text-slate-300">
+                    Топ дня <span className="text-xs text-roseBrown/60">(«Быстро разбирают»)</span>
+                  </span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-3">
+                  <input type="checkbox" className="h-4 w-4 accent-accent" {...editForm.register('top_week')} />
+                  <span className="text-sm text-ink dark:text-slate-300">
+                    Топ недели <span className="text-xs text-roseBrown/60">(«Любимцы покупателей»)</span>
+                  </span>
+                </label>
+              </div>
+
+              {/* Кнопки */}
+              <div className="mt-auto flex gap-3 pt-2">
+                <Button type="submit" className="flex-1" disabled={isEditSaving}>
+                  {isEditSaving ? 'Сохраняем…' : 'Сохранить'}
+                </Button>
+                <Button type="button" variant="ghost" className="flex-1" onClick={() => setEditingItem(null)}>
+                  Отмена
+                </Button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
     </>
   );
 };
 
-export default AdminPage;
+export default AdminPage;

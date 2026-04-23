@@ -19,10 +19,31 @@ const HomePage = () => {
   const { data: products = [] } = useProducts();
   const [quickViewProduct, setQuickViewProduct] = useState(null);
 
-  const topDay = useMemo(() => products.filter((product) => product.topDay), [products]);
-  const topWeek = useMemo(() => products.filter((product) => product.topWeek), [products]);
+  // «Быстро разбирают сегодня» — сортируем по числу Telegram-заказов за сегодня.
+  // Если у всех ordersToday = 0 (ещё нет заказов) — fallback на recommendationScore.
+  const topDay = useMemo(() => {
+    const sorted = [...products].sort((a, b) => {
+      const byToday = (b.ordersToday ?? 0) - (a.ordersToday ?? 0);
+      if (byToday !== 0) return byToday;
+      return (b.recommendationScore ?? 0) - (a.recommendationScore ?? 0);
+    });
+    return sorted.slice(0, 8);
+  }, [products]);
+
+  // «Любимцы покупателей» — сортируем по числу Telegram-заказов за 7 дней.
+  // Fallback: rating + reviewsCount.
+  const topWeek = useMemo(() => {
+    const sorted = [...products].sort((a, b) => {
+      const byWeek = (b.ordersWeek ?? 0) - (a.ordersWeek ?? 0);
+      if (byWeek !== 0) return byWeek;
+      return (b.rating ?? 0) - (a.rating ?? 0) || (b.reviewsCount ?? 0) - (a.reviewsCount ?? 0);
+    });
+    return sorted.slice(0, 8);
+  }, [products]);
+
+  // «Рекомендации для вас» — recommendationScore уже включает реальные заказы.
   const recommendations = useMemo(
-    () => [...products].sort((a, b) => b.recommendationScore - a.recommendationScore).slice(0, 4),
+    () => [...products].sort((a, b) => (b.recommendationScore ?? 0) - (a.recommendationScore ?? 0)).slice(0, 4),
     [products]
   );
   const discounts = useMemo(() => products.filter((product) => product.oldPrice).slice(0, 4), [products]);

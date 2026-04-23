@@ -109,3 +109,19 @@
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950;
   }
 }
+
+/* ── Равная высота карточек в слайдере ─────────────────────── */
+/* .swiper-wrapper растягивается по вертикали                   */
+.swiper-wrapper {
+  align-items: stretch;
+}
+
+/* Каждый слайд занимает авто-высоту (не фиксированную)         */
+.swiper-slide {
+  height: auto !important;
+}
+
+/* Карточка внутри слайда растягивается на всю высоту слайда    */
+.swiper-slide > * {
+  height: 100%;
+}

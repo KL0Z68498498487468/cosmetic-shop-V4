@@ -16,7 +16,7 @@ const ProductCard = ({ product, onQuickView, className }) => {
   return (
     <article
       className={cn(
-        'surface-card surface-hover group relative overflow-hidden p-4',
+        'surface-card surface-hover group relative flex h-full flex-col overflow-hidden p-4',
         className
       )}
     >
@@ -59,21 +59,44 @@ const ProductCard = ({ product, onQuickView, className }) => {
         </div>
       </Link>
 
-      <div className="mt-5">
-        <div className="text-xs uppercase tracking-[0.22em] text-roseBrown/70 dark:text-slate-400">{product.brand}</div>
-        <Link to={`/catalog/${product.slug}`} className="mt-2 block text-lg font-semibold text-ink dark:text-slate-100">
+      {/* Текстовый блок: flex-col, занимает всё свободное место */}
+      <div className="mt-5 flex flex-1 flex-col">
+
+        {/* Бренд — 1 строка */}
+        <div className="text-xs uppercase tracking-[0.22em] text-roseBrown/70 dark:text-slate-400 line-clamp-1">
+          {product.brand}
+        </div>
+
+        {/* Название — максимум 2 строки, фиксированная высота слота */}
+        <Link
+          to={`/catalog/${product.slug}`}
+          className="mt-2 block min-h-[3.5rem] text-lg font-semibold leading-snug text-ink line-clamp-2 dark:text-slate-100"
+        >
           {product.name}
         </Link>
-        <div className="mt-1 text-sm text-roseBrown/75 dark:text-slate-400">{product.type}</div>
+
+        {/* Тип — 1 строка */}
+        <div className="mt-1 text-sm text-roseBrown/75 line-clamp-1 dark:text-slate-400">
+          {product.type}
+        </div>
+
+        {/* Рейтинг */}
         <div className="mt-3">
           <Rating value={product.rating} reviewsCount={product.reviewsCount} />
         </div>
-        <div className="mt-4 flex items-end gap-2">
-          <div className="text-xl font-extrabold text-ink dark:text-slate-100">{formatPrice(product.price)}</div>
+
+        {/* Цена всегда прижата ко дну текстового блока */}
+        <div className="mt-auto pt-4 flex items-end gap-2">
+          <div className="text-xl font-extrabold text-ink dark:text-slate-100">
+            {formatPrice(product.price)}
+          </div>
           {product.oldPrice ? (
-            <div className="text-sm text-roseBrown/50 line-through dark:text-slate-500">{formatPrice(product.oldPrice)}</div>
+            <div className="text-sm text-roseBrown/50 line-through dark:text-slate-500">
+              {formatPrice(product.oldPrice)}
+            </div>
           ) : null}
         </div>
+
       </div>
 
       <div className="mt-5 flex gap-2">

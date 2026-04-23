@@ -45,6 +45,11 @@ export const sendTelegramOrder = async ({ product, variant, order }) => {
     throw new Error(result?.description || 'Не удалось отправить заявку в Telegram');
   }
 
+  // Записываем факт заказа в Supabase для работы слайдеров
+  if (product?.id) {
+    await recordProductOrder(product.id).catch(() => {});
+  }
+
   return result;
 };
 
@@ -93,6 +98,60 @@ export const sendTelegramCartOrder = async ({ cart, order, total }) => {
   }
 
   return result;
+};
+
+/**
+ * Записывает один Telegram-заказ в таблицу product_orders.
+ * Используется для подсчёта популярности товаров в слайдерах.
+ */
+export const recordProductOrder = async (productId) => {
+  if (!supabase || !productId) return;
+  const { error } = await supabase
+    .from('product_orders')
+    .insert([{ product_id: String(productId) }]);
+  if (error) {
+    console.error('Error recording product order:', error);
+  }
+};
+
+/**
+ * Загружает статистику заказов за сегодня и за 7 дней для всех товаров.
+ * Возвращает Map: productId → { ordersToday, ordersWeek, ordersTotal }
+ */
+const fetchOrderStats = async () => {
+  if (!supabase) return new Map();
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfWeek = new Date();
+  startOfWeek.setDate(startOfWeek.getDate() - 7);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const { data, error } = await supabase
+    .from('product_orders')
+    .select('product_id, created_at')
+    .gte('created_at', startOfWeek.toISOString());
+
+  if (error || !Array.isArray(data)) {
+    console.error('Error fetching order stats:', error);
+    return new Map();
+  }
+
+  const todayMs = startOfToday.getTime();
+  const statsMap = new Map();
+
+  data.forEach(({ product_id, created_at }) => {
+    const existing = statsMap.get(product_id) || { ordersToday: 0, ordersWeek: 0, ordersTotal: 0 };
+    existing.ordersWeek += 1;
+    existing.ordersTotal += 1;
+    if (new Date(created_at).getTime() >= todayMs) {
+      existing.ordersToday += 1;
+    }
+    statsMap.set(product_id, existing);
+  });
+
+  return statsMap;
 };
 
 const normalizeCategory = (categoryPath) => {
@@ -237,38 +296,60 @@ export const fetchProducts = async () => {
                   .filter(Boolean)
               : [],
             tags: Array.isArray(product.tags) ? product.tags : [],
-            recommendationScore: product.recommendation_score ?? 85,
-            topDay: false,
-            topWeek: false
+            recommendationScore: product.recommendation_score ?? null,
+            topDay: Boolean(product.top_day),
+            topWeek: Boolean(product.top_week)
           };
         })
       );
 
       const productIds = supabaseProducts.map((item) => item.id).filter(Boolean);
-      if (productIds.length > 0) {
-        const { data: reviewRows, error: reviewError } = await supabase
-          .from('product_reviews')
-          .select('product_id, rating')
-          .in('product_id', productIds);
 
-        if (!reviewError && Array.isArray(reviewRows)) {
-          const reviewsByProductId = reviewRows.reduce((acc, row) => {
-            const key = row.product_id;
-            acc[key] = [...(acc[key] || []), row];
-            return acc;
-          }, {});
+      // Загружаем статистику заказов и отзывов параллельно
+      const [orderStatsMap, reviewRows] = await Promise.all([
+        fetchOrderStats(),
+        productIds.length > 0
+          ? supabase
+              .from('product_reviews')
+              .select('product_id, rating')
+              .in('product_id', productIds)
+              .then(({ data, error }) => (error ? [] : data || []))
+          : Promise.resolve([])
+      ]);
 
-          return supabaseProducts.map((product) => ({
-            ...product,
-            ...buildRatingSummary(
-              [...(product.reviews || []), ...(reviewsByProductId[product.id] || [])],
-              product.rating
-            )
-          }));
-        }
-      }
+      const reviewsByProductId = reviewRows.reduce((acc, row) => {
+        const key = row.product_id;
+        acc[key] = [...(acc[key] || []), row];
+        return acc;
+      }, {});
 
-      return supabaseProducts;
+      return supabaseProducts.map((product) => {
+        const summary = buildRatingSummary(
+          [...(product.reviews || []), ...(reviewsByProductId[product.id] || [])],
+          product.rating
+        );
+        const stats = orderStatsMap.get(String(product.id)) || {
+          ordersToday: 0,
+          ordersWeek: 0,
+          ordersTotal: 0
+        };
+        // Скор: рейтинг + отзывы + новинка/скидка + реальные заказы (каждый +4 балла)
+        const computedScore = product.recommendationScore != null
+          ? product.recommendationScore + stats.ordersTotal * 4
+          : Math.round(
+              summary.rating * 10 +
+              summary.reviewsCount * 2 +
+              (product.isNew ? 15 : 0) +
+              (product.discountPercent > 0 ? 5 : 0) +
+              stats.ordersTotal * 4
+            );
+        return {
+          ...product,
+          ...summary,
+          ...stats,
+          recommendationScore: computedScore
+        };
+      });
     }
 
     return [];

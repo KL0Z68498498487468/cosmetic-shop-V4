@@ -11,6 +11,9 @@ const Carousel = ({ children, ...props }) => {
         1024: { slidesPerView: 3.2 },
         1280: { slidesPerView: 4 }
       }}
+      /* Выравниваем все слайды по высоте самого высокого */
+      style={{ alignItems: 'stretch' }}
+      className="!items-stretch"
       {...props}
     >
       {children}
