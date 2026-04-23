@@ -494,7 +494,6 @@ const AdminPage = () => {
                 <Input
                   label="Email"
                   type="email"
-                  placeholder="admin@lumina.com"
                   autoComplete="email"
                   error={loginForm.formState.errors.email?.message}
                   {...loginForm.register('email')}
@@ -502,7 +501,6 @@ const AdminPage = () => {
                 <Input
                   label="Пароль"
                   type="password"
-                  placeholder="••••••••"
                   autoComplete="current-password"
                   error={loginForm.formState.errors.password?.message}
                   {...loginForm.register('password')}
