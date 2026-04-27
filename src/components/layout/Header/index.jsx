@@ -1,12 +1,14 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { useDeferredValue, useMemo, useState, useEffect } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import {
   FiHeart, FiMoon, FiSearch, FiShoppingBag,
   FiSun, FiMenu, FiX, FiChevronRight
 } from 'react-icons/fi';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Input from '@/components/common/Input/index.jsx';
-import { siteTexts } from '@/constants/texts.js';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher/index.jsx';
+import { getSiteTexts } from '@/constants/texts.js';
 import useCart from '@/hooks/useCart.js';
 import useProducts from '@/hooks/useProducts.js';
 import useWishlist from '@/hooks/useWishlist.js';
@@ -15,6 +17,8 @@ import { useThemeStore } from '@/store/themeStore.js';
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
+  const siteTexts = getSiteTexts(t);
   const [query, setQuery] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -28,7 +32,6 @@ const Header = () => {
   );
   const { isDark, toggleTheme } = useThemeStore();
 
-  // Закрываем всё при смене страницы
   useEffect(() => {
     setDrawerOpen(false);
     setSearchOpen(false);
@@ -37,9 +40,10 @@ const Header = () => {
 
   const searchResults = useMemo(() => {
     if (!deferredQuery.trim()) return [];
+
     return products
-      .filter((p) =>
-        `${p.name} ${p.brand}`.toLowerCase().includes(deferredQuery.toLowerCase())
+      .filter((product) =>
+        `${product.name} ${product.brand}`.toLowerCase().includes(deferredQuery.toLowerCase())
       )
       .slice(0, 5);
   }, [deferredQuery, products]);
@@ -66,14 +70,16 @@ const Header = () => {
           >
             <img src={product.image} alt={product.name} className="h-12 w-12 flex-shrink-0 rounded-xl object-cover" />
             <div className="min-w-0">
-              <div className="truncate font-semibold text-ink text-sm">{product.name}</div>
+              <div className="truncate text-sm font-semibold text-ink">{product.name}</div>
               <div className="text-[11px] text-roseBrown/70">{product.brand}</div>
             </div>
           </button>
         ))}
-        {!searchResults.length && query && (
-          <div className="p-4 text-center text-xs text-roseBrown/50 font-medium">Ничего не найдено</div>
-        )}
+        {!searchResults.length && query ? (
+          <div className="p-4 text-center text-xs font-medium text-roseBrown/50">
+            {t('common.noResults')}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -82,11 +88,7 @@ const Header = () => {
     <>
       <header className="sticky top-0 z-40 border-b border-white/70 bg-white/80 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/80">
         <div className="container-shell px-4 sm:px-6">
-
-          {/* ── Основная строка ─────────────────────────────── */}
           <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
-
-            {/* Бургер (мобайл) */}
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
@@ -95,35 +97,37 @@ const Header = () => {
               <FiMenu size={20} />
             </button>
 
-            {/* Логотип */}
             <Link to="/" className="flex flex-shrink-0 items-center gap-2">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-ink text-sm font-bold text-white dark:bg-slate-100 dark:text-slate-900 sm:h-10 sm:w-10 sm:rounded-2xl sm:text-base">
                 L
               </span>
               <div className="hidden xs:block">
                 <div className="font-display text-xl font-semibold leading-none dark:text-slate-100 sm:text-2xl">Lumina</div>
-                <div className="hidden text-[9px] uppercase tracking-[0.24em] text-roseBrown/70 dark:text-slate-400 sm:block">beauty store</div>
+                <div className="hidden text-[9px] uppercase tracking-[0.24em] text-roseBrown/70 dark:text-slate-400 sm:block">
+                  {t('common.beautyStore')}
+                </div>
               </div>
             </Link>
 
-            {/* Поиск — только десктоп */}
-            <div className="relative hidden flex-1 max-w-md lg:block xl:max-w-xl">
+            <div className="relative hidden max-w-md flex-1 lg:block xl:max-w-xl">
               <Input
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Найти парфюм, бренд..."
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t('common.searchExtended')}
                 className="pr-12"
               />
               <FiSearch className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-roseBrown/70" />
               {searchResults.length ? <SearchDropdown /> : null}
             </div>
 
-            {/* Иконки */}
+            <div className="hidden lg:block">
+              <LanguageSwitcher />
+            </div>
+
             <div className="flex items-center gap-1 sm:gap-1.5">
-              {/* Поиск (мобайл) */}
               <button
                 type="button"
-                onClick={() => setSearchOpen((v) => !v)}
+                onClick={() => setSearchOpen((value) => !value)}
                 className={`grid h-10 w-10 place-items-center rounded-full border transition lg:hidden ${
                   searchOpen ? 'border-accent bg-accent/5 text-accent' : 'border-line bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100'
                 }`}
@@ -165,26 +169,24 @@ const Header = () => {
             </div>
           </div>
 
-          {/* ── Мобильный поиск (раскрывается) ──────────────── */}
-          {searchOpen && (
-            <div className="relative pb-3 lg:hidden px-0.5">
+          {searchOpen ? (
+            <div className="relative px-0.5 pb-3 lg:hidden">
               <Input
                 autoFocus
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Поиск..."
-                className="pr-12 h-11"
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t('common.search')}
+                className="h-11 pr-12"
               />
               <FiSearch className="pointer-events-none absolute right-4 top-[40%] -translate-y-1/2 text-roseBrown/70" />
-              {query && <SearchDropdown isMobile />}
+              {query ? <SearchDropdown isMobile /> : null}
             </div>
-          )}
+          ) : null}
 
-          {/* ── Нижняя строка — только десктоп ───────────────── */}
           <div className="hidden items-center justify-between gap-4 pb-3 lg:flex">
             <Menu as="div" className="relative">
               <MenuButton className="inline-flex h-11 items-center rounded-full bg-ink px-5 text-sm font-semibold text-white transition hover:bg-ink/90">
-                Категории
+                {t('common.categories')}
               </MenuButton>
               <MenuItems className="absolute left-0 mt-3 grid w-[min(720px,90vw)] gap-4 rounded-[2rem] border border-line bg-white p-5 shadow-soft focus:outline-none dark:border-slate-700 dark:bg-slate-900 md:grid-cols-3">
                 {siteTexts.categories.map((category) => (
@@ -195,7 +197,7 @@ const Header = () => {
                     >
                       <img src={category.image} alt={category.title} className="h-32 w-full rounded-[1.25rem] object-cover" />
                       <div className="mt-3 font-semibold text-ink dark:text-slate-100">{category.title}</div>
-                      <div className="mt-1 text-xs text-roseBrown/75 line-clamp-2 dark:text-slate-400">{category.description}</div>
+                      <div className="mt-1 line-clamp-2 text-xs text-roseBrown/75 dark:text-slate-400">{category.description}</div>
                     </Link>
                   </MenuItem>
                 ))}
@@ -207,9 +209,7 @@ const Header = () => {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className={({ isActive }) =>
-                    `transition hover:text-accent ${isActive ? 'text-accent' : ''}`
-                  }
+                  className={({ isActive }) => `transition hover:text-accent ${isActive ? 'text-accent' : ''}`}
                 >
                   {item.label}
                 </NavLink>
@@ -219,32 +219,37 @@ const Header = () => {
         </div>
       </header>
 
-      {/* ── Drawer (Мобильное меню) ─────────────────────────── */}
-      <div 
+      <div
         className={`fixed inset-0 z-50 transition-opacity duration-300 lg:hidden ${
-          drawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          drawerOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
         }`}
       >
         <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={closeDrawer} />
-        
+
         <aside
           className={`absolute inset-y-0 left-0 flex w-[min(300px,85vw)] flex-col bg-white transition-transform duration-300 dark:bg-slate-950 ${
             drawerOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {/* Header Drawer */}
           <div className="flex items-center justify-between border-b border-line px-5 py-4 dark:border-slate-800">
             <Link to="/" className="flex items-center gap-2">
               <span className="grid h-8 w-8 place-items-center rounded-lg bg-ink text-sm font-bold text-white">L</span>
               <span className="font-display text-xl font-semibold dark:text-slate-100">Lumina</span>
             </Link>
-            <button onClick={closeDrawer} className="p-2 -mr-2"><FiX size={20} /></button>
+            <button type="button" onClick={closeDrawer} className="-mr-2 p-2">
+              <FiX size={20} />
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-6 custom-scrollbar">
-            {/* Навигация */}
+            <div className="mb-6">
+              <LanguageSwitcher className="w-full justify-center" />
+            </div>
+
             <div className="mb-8">
-              <div className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-roseBrown/40 dark:text-slate-500">Меню</div>
+              <div className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-roseBrown/40 dark:text-slate-500">
+                {t('common.menu')}
+              </div>
               <nav className="grid gap-1">
                 {siteTexts.nav.map((item) => (
                   <NavLink
@@ -263,9 +268,10 @@ const Header = () => {
               </nav>
             </div>
 
-            {/* Категории */}
             <div>
-              <div className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-roseBrown/40 dark:text-slate-500">Категории</div>
+              <div className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.2em] text-roseBrown/40 dark:text-slate-500">
+                {t('common.categories')}
+              </div>
               <div className="grid gap-2">
                 {siteTexts.categories.map((category) => (
                   <Link
@@ -292,9 +298,9 @@ const Header = () => {
             >
               <div className="flex items-center gap-3">
                 {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}
-                <span>{isDark ? 'Светлая тема' : 'Тёмная тема'}</span>
+                <span>{isDark ? t('common.lightTheme') : t('common.darkTheme')}</span>
               </div>
-              <div className={`h-5 w-10 rounded-full transition-colors relative ${isDark ? 'bg-accent' : 'bg-slate-300'}`}>
+              <div className={`relative h-5 w-10 rounded-full transition-colors ${isDark ? 'bg-accent' : 'bg-slate-300'}`}>
                 <div className={`absolute top-1 h-3 w-3 rounded-full bg-white transition-all ${isDark ? 'right-1' : 'left-1'}`} />
               </div>
             </button>

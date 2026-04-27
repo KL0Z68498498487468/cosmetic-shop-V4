@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import Seo from '@/components/common/Seo/index.jsx';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
+import Seo from '@/components/common/Seo/index.jsx';
 import { fetchBlogPostBySlug } from '@/services/api.js';
 import { queryKeys } from '@/services/queryKeys.js';
 
 const BlogPostPage = () => {
+  const { t } = useTranslation();
   const { slug } = useParams();
   const { data: post } = useQuery({
     queryKey: queryKeys.blogPost(slug),
@@ -22,8 +24,8 @@ const BlogPostPage = () => {
       <div className="container-shell py-8">
         <Breadcrumbs
           items={[
-            { label: 'Главная', to: '/' },
-            { label: 'Блог', to: '/blog' },
+            { label: t('common.home'), to: '/' },
+            { label: t('common.blog'), to: '/blog' },
             { label: post.title }
           ]}
         />

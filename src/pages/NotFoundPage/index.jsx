@@ -1,18 +1,21 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import Seo from '@/components/common/Seo/index.jsx';
 import Button from '@/components/common/Button/index.jsx';
+import Seo from '@/components/common/Seo/index.jsx';
 
 const NotFoundPage = () => {
+  const { t } = useTranslation();
+
   return (
     <>
-      <Seo title="Страница не найдена | Lumina" />
+      <Seo title={`${t('notFoundPage.title')} | Lumina`} />
       <div className="container-shell py-20">
         <div className="surface-card p-12 text-center">
           <div className="font-display text-7xl text-accent">404</div>
-          <h1 className="mt-4 text-3xl font-semibold text-ink dark:text-slate-100">Страница не найдена</h1>
-          <p className="mt-3 text-muted">Возможно, ссылка устарела или страница была перемещена.</p>
+          <h1 className="mt-4 text-3xl font-semibold text-ink dark:text-slate-100">{t('notFoundPage.title')}</h1>
+          <p className="mt-3 text-muted">{t('notFoundPage.description')}</p>
           <Button as={Link} to="/" className="mt-6">
-            На главную
+            {t('common.backHome')}
           </Button>
         </div>
       </div>

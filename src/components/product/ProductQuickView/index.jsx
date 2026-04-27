@@ -1,4 +1,5 @@
 import { FiHeart, FiShoppingBag } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import Button from '@/components/common/Button/index.jsx';
 import Modal from '@/components/common/Modal/index.jsx';
 import Rating from '@/components/product/Rating/index.jsx';
@@ -7,6 +8,7 @@ import { useWishlistStore } from '@/store/wishlistStore.js';
 import { formatPrice } from '@/utils/formatPrice.js';
 
 const ProductQuickView = ({ product, isOpen, onClose }) => {
+  const { t } = useTranslation();
   const addItem = useCartStore((state) => state.addItem);
   const toggleWishlist = useWishlistStore((state) => state.toggle);
 
@@ -48,7 +50,7 @@ const ProductQuickView = ({ product, isOpen, onClose }) => {
               className="flex-1"
               icon={<FiShoppingBag />}
             >
-              В корзину
+              {t('common.addToCart')}
             </Button>
             <Button
               type="button"
@@ -57,7 +59,7 @@ const ProductQuickView = ({ product, isOpen, onClose }) => {
               icon={<FiHeart />}
               className="flex-1"
             >
-              В избранное
+              {t('common.addToWishlist')}
             </Button>
           </div>
         </div>

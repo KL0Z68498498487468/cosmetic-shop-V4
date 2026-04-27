@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const getTimeLeft = (targetDate) => {
   const difference = new Date(targetDate).getTime() - Date.now();
@@ -15,6 +16,7 @@ const getTimeLeft = (targetDate) => {
 };
 
 const CountdownTimer = ({ targetDate }) => {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(targetDate));
 
   useEffect(() => {
@@ -30,7 +32,9 @@ const CountdownTimer = ({ targetDate }) => {
       {Object.entries(timeLeft).map(([key, value]) => (
         <div key={key} className="rounded-[1.5rem] border border-white/50 bg-white/80 px-4 py-3 text-center dark:border-slate-700 dark:bg-slate-900/80">
           <div className="text-2xl font-bold text-ink dark:text-slate-100">{value}</div>
-          <div className="text-[10px] uppercase tracking-[0.24em] text-roseBrown/70 dark:text-slate-400">{key}</div>
+          <div className="text-[10px] uppercase tracking-[0.24em] text-roseBrown/70 dark:text-slate-400">
+            {t(`countdown.${key}`)}
+          </div>
         </div>
       ))}
     </div>

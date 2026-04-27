@@ -1,12 +1,15 @@
 import { useForm } from 'react-hook-form';
 import { FiInstagram, FiMail, FiMapPin, FiPhone } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import Button from '@/components/common/Button/index.jsx';
 import Input from '@/components/common/Input/index.jsx';
-import { siteTexts } from '@/constants/texts.js';
+import { getSiteTexts } from '@/constants/texts.js';
 
 const Footer = () => {
+  const { t } = useTranslation();
+  const siteTexts = getSiteTexts(t);
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       email: ''
@@ -14,7 +17,7 @@ const Footer = () => {
   });
 
   const onSubmit = (values) => {
-    toast.success(`Подписка оформлена для ${values.email}`);
+    toast.success(t('toast.subscribed', { email: values.email }));
     reset();
   };
 
@@ -23,24 +26,24 @@ const Footer = () => {
       <div className="container-shell py-16">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
           <div className="rounded-[2rem] bg-ink bg-soft-mesh p-8 text-white shadow-soft dark:bg-slate-900 dark:shadow-[0_18px_40px_rgba(2,6,23,0.45)]">
-            <div className="font-display text-4xl">Письма, которые хочется открывать</div>
+            <div className="font-display text-4xl">{t('common.newsletterTitle')}</div>
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/80">{siteTexts.newsletter}</p>
             <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Input
                 type="email"
-                placeholder="Ваш email"
+                placeholder={t('footer.emailPlaceholder')}
                 className="border-white/20 bg-white/90 text-ink"
                 {...register('email', { required: true })}
               />
               <Button type="submit" variant="soft" className="shrink-0">
-                Подписаться
+                {t('footer.subscribe')}
               </Button>
             </form>
           </div>
 
           <div className="surface-card p-6">
             <div className="text-sm font-bold uppercase tracking-[0.25em] text-roseBrown/70 dark:text-slate-400">
-              Компания
+              {t('common.company')}
             </div>
             <div className="mt-5 space-y-3">
               {siteTexts.footerLinks.company.map((item) => (
@@ -57,7 +60,7 @@ const Footer = () => {
 
           <div className="surface-card p-6">
             <div className="text-sm font-bold uppercase tracking-[0.25em] text-roseBrown/70 dark:text-slate-400">
-              Контакты
+              {t('common.contactSection')}
             </div>
             <div className="mt-5 space-y-3 text-sm text-roseBrown/80 dark:text-slate-300">
               <div className="flex items-center gap-3">
@@ -67,7 +70,7 @@ const Footer = () => {
                 <FiMail /> hello@lumina-demo.uz
               </div>
               <div className="flex items-center gap-3">
-                <FiMapPin /> Ташкент, ул. Сайрам, 24
+                <FiMapPin /> {t('common.address')}
               </div>
               <div className="flex items-center gap-3">
                 <FiInstagram /> @lumina.beauty

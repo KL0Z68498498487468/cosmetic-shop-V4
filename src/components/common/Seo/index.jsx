@@ -1,16 +1,21 @@
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 
 const Seo = ({
-  title = 'Lumina Beauty Store',
-  description = 'Премиальный интернет-магазин косметики, парфюмерии и beauty-товаров.',
+  title,
+  description,
   image = 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=1200&q=80'
 }) => {
+  const { t } = useTranslation();
+  const resolvedTitle = title || t('seo.defaultTitle');
+  const resolvedDescription = description || t('seo.defaultDescription');
+
   return (
     <Helmet>
-      <title>{title}</title>
-      <meta name="description" content={description} />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
+      <title>{resolvedTitle}</title>
+      <meta name="description" content={resolvedDescription} />
+      <meta property="og:title" content={resolvedTitle} />
+      <meta property="og:description" content={resolvedDescription} />
       <meta property="og:image" content={image} />
     </Helmet>
   );

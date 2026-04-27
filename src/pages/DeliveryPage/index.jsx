@@ -1,29 +1,20 @@
-import Seo from '@/components/common/Seo/index.jsx';
+import { useTranslation } from 'react-i18next';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
+import Seo from '@/components/common/Seo/index.jsx';
 
 const DeliveryPage = () => {
+  const { t } = useTranslation();
+  const options = t('deliveryPage.options', { returnObjects: true });
+
   return (
     <>
-      <Seo title="Доставка и оплата | Lumina" />
+      <Seo title={`${t('common.delivery')} | Lumina`} />
       <div className="container-shell py-8">
-        <Breadcrumbs items={[{ label: 'Главная', to: '/' }, { label: 'Доставка и оплата' }]} />
+        <Breadcrumbs items={[{ label: t('common.home'), to: '/' }, { label: t('common.delivery') }]} />
         <div className="surface-card mt-6 p-8">
-          <h1 className="section-title">Доставка и оплата</h1>
+          <h1 className="section-title">{t('deliveryPage.title')}</h1>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {[
-              {
-                title: 'Самовывоз',
-                text: 'Бесплатно. Готовность заказа в течение 2 часов после подтверждения.'
-              },
-              {
-                title: 'Курьер',
-                text: 'По Ташкенту день в день. Бесплатно от 250 000 сум, иначе 25 000 сум.'
-              },
-              {
-                title: 'Постамат',
-                text: 'Удобно для занятых клиентов. Средний срок доставки 1-2 дня.'
-              }
-            ].map((item) => (
+            {options.map((item) => (
               <div key={item.title} className="rounded-[2rem] bg-pearl p-6 dark:bg-slate-800">
                 <div className="text-xl font-semibold text-ink dark:text-slate-100">{item.title}</div>
                 <p className="mt-3 text-muted">{item.text}</p>

@@ -1,28 +1,30 @@
-import Seo from '@/components/common/Seo/index.jsx';
+import { useTranslation } from 'react-i18next';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
 import EmptyState from '@/components/common/EmptyState/index.jsx';
 import ProductCard from '@/components/product/ProductCard/index.jsx';
+import Seo from '@/components/common/Seo/index.jsx';
 import useProducts from '@/hooks/useProducts.js';
 import useWishlist from '@/hooks/useWishlist.js';
 
 const WishlistPage = () => {
+  const { t } = useTranslation();
   const { data: products = [] } = useProducts();
   const { items } = useWishlist(products);
 
   return (
     <>
-      <Seo title="Избранное | Lumina" />
+      <Seo title={`${t('wishlistPage.title')} | Lumina`} />
       <div className="container-shell py-8">
-        <Breadcrumbs items={[{ label: 'Главная', to: '/' }, { label: 'Избранное' }]} />
+        <Breadcrumbs items={[{ label: t('common.home'), to: '/' }, { label: t('wishlistPage.title') }]} />
         <div className="mt-6">
-          <h1 className="section-title">Избранное</h1>
+          <h1 className="section-title">{t('wishlistPage.title')}</h1>
         </div>
         {!items.length ? (
           <div className="mt-8">
             <EmptyState
-              title="Избранное пока пусто"
-              description="Сохраняйте товары сердечком, чтобы вернуться к ним позже."
-              actionLabel="Открыть каталог"
+              title={t('wishlistPage.emptyTitle')}
+              description={t('wishlistPage.emptyDescription')}
+              actionLabel={t('wishlistPage.emptyAction')}
             />
           </div>
         ) : (

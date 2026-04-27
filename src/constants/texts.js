@@ -1,54 +1,48 @@
-export const siteTexts = {
+export const getSiteTexts = (t) => ({
   brandName: 'Lumina',
-  tagline: 'Интернет-магазин косметики, парфюмерии и ухода с premium-сервисом',
+  tagline: t('site.tagline'),
   nav: [
-    { label: 'Каталог', to: '/catalog' },
-    { label: 'О нас', to: '/about' },
-    { label: 'Блог', to: '/blog' },
-    { label: 'Контакты', to: '/contacts' }
+    { label: t('nav.catalog'), to: '/catalog' },
+    { label: t('nav.about'), to: '/about' },
+    { label: t('nav.blog'), to: '/blog' },
+    { label: t('nav.contacts'), to: '/contacts' }
   ],
   categories: [
     {
-      title: 'Уход',
+      title: t('site.categories.skincare.title'),
       slug: 'skincare',
-      description: 'Сыворотки, кремы и SPF для ритуала, который работает',
+      description: t('site.categories.skincare.description'),
       image:
         'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=900&q=80'
     },
     {
-      title: 'Макияж',
+      title: t('site.categories.makeup.title'),
       slug: 'makeup',
-      description: 'Тон, губы, сияние и коллекции для выразительного образа',
+      description: t('site.categories.makeup.description'),
       image:
         'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80'
     },
     {
-      title: 'Парфюм',
+      title: t('site.categories.perfume.title'),
       slug: 'perfume',
-      description: 'Композиции с длинным шлейфом для дня, вечера и подарка',
+      description: t('site.categories.perfume.description'),
       image:
         'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=80'
     }
   ],
   hero: {
-    overline: 'Spring Edit 2026',
-    title: 'Подберите свою рутину красоты с эффектом люксового бутика',
-    description:
-      'Собрали bestselling-уход, нишевый парфюм и макияж, который хочется рассматривать. Бесплатная доставка от 250 000 сум и подарки к заказу этой недели.',
-    ctaPrimary: 'Перейти в каталог',
-    ctaSecondary: 'Смотреть подборки'
+    overline: t('site.hero.overline'),
+    title: t('site.hero.title'),
+    description: t('site.hero.description'),
+    ctaPrimary: t('site.hero.ctaPrimary'),
+    ctaSecondary: t('site.hero.ctaSecondary')
   },
   footerLinks: {
     company: [
-      { label: 'О бренде', to: '/about' },
-      { label: 'Блог', to: '/blog' },
-      { label: 'Контакты', to: '/contacts' }
-    ],
-    support: [
-      { label: 'Профиль', to: '/profile' },
-      { label: 'Избранное', to: '/wishlist' }
+      { label: t('footer.brand'), to: '/about' },
+      { label: t('nav.blog'), to: '/blog' },
+      { label: t('nav.contacts'), to: '/contacts' }
     ]
   },
-  newsletter:
-    'Подписывайтесь на рассылку: закрытые скидки, бьюти-гайды, новинки и подарки к заказу.'
-};
+  newsletter: t('footer.newsletter')
+});

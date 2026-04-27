@@ -1,4 +1,5 @@
 import { FiEye, FiHeart, FiShoppingBag } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Button from '@/components/common/Button/index.jsx';
 import Rating from '@/components/product/Rating/index.jsx';
@@ -8,6 +9,7 @@ import { formatPrice } from '@/utils/formatPrice.js';
 import { cn } from '@/utils/helpers.js';
 
 const ProductCard = ({ product, onQuickView, className }) => {
+  const { t } = useTranslation();
   const addItem = useCartStore((state) => state.addItem);
   const wishlistIds = useWishlistStore((state) => state.ids);
   const toggleWishlist = useWishlistStore((state) => state.toggle);
@@ -31,6 +33,7 @@ const ProductCard = ({ product, onQuickView, className }) => {
               ? 'border-accent text-accent'
               : 'border-line text-ink hover:border-accent dark:border-slate-700 dark:text-slate-100'
           )}
+          aria-label={t('common.addToWishlist')}
         >
           <FiHeart className={isWishlisted ? 'fill-current' : ''} />
         </button>
@@ -59,34 +62,27 @@ const ProductCard = ({ product, onQuickView, className }) => {
         </div>
       </Link>
 
-      {/* Текстовый блок: flex-col, занимает всё свободное место */}
       <div className="mt-5 flex flex-1 flex-col">
-
-        {/* Бренд — 1 строка */}
-        <div className="text-xs uppercase tracking-[0.22em] text-roseBrown/70 dark:text-slate-400 line-clamp-1">
+        <div className="line-clamp-1 text-xs uppercase tracking-[0.22em] text-roseBrown/70 dark:text-slate-400">
           {product.brand}
         </div>
 
-        {/* Название — максимум 2 строки, фиксированная высота слота */}
         <Link
           to={`/catalog/${product.slug}`}
-          className="mt-2 block min-h-[3.5rem] text-lg font-semibold leading-snug text-ink line-clamp-2 dark:text-slate-100"
+          className="mt-2 block min-h-[3.5rem] line-clamp-2 text-lg font-semibold leading-snug text-ink dark:text-slate-100"
         >
           {product.name}
         </Link>
 
-        {/* Тип — 1 строка */}
-        <div className="mt-1 text-sm text-roseBrown/75 line-clamp-1 dark:text-slate-400">
+        <div className="mt-1 line-clamp-1 text-sm text-roseBrown/75 dark:text-slate-400">
           {product.type}
         </div>
 
-        {/* Рейтинг */}
         <div className="mt-3">
           <Rating value={product.rating} reviewsCount={product.reviewsCount} />
         </div>
 
-        {/* Цена всегда прижата ко дну текстового блока */}
-        <div className="mt-auto pt-4 flex items-end gap-2">
+        <div className="mt-auto flex items-end gap-2 pt-4">
           <div className="text-xl font-extrabold text-ink dark:text-slate-100">
             {formatPrice(product.price)}
           </div>
@@ -96,7 +92,6 @@ const ProductCard = ({ product, onQuickView, className }) => {
             </div>
           ) : null}
         </div>
-
       </div>
 
       <div className="mt-5 flex gap-2">
@@ -106,7 +101,7 @@ const ProductCard = ({ product, onQuickView, className }) => {
           className="flex-1"
           icon={<FiShoppingBag />}
         >
-          В корзину
+          {t('common.addToCart')}
         </Button>
       </div>
     </article>

@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import Seo from '@/components/common/Seo/index.jsx';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
-import EmptyState from '@/components/common/EmptyState/index.jsx';
-import QuantitySelector from '@/components/common/QuantitySelector/index.jsx';
 import Button from '@/components/common/Button/index.jsx';
+import EmptyState from '@/components/common/EmptyState/index.jsx';
 import Modal from '@/components/common/Modal/index.jsx';
+import QuantitySelector from '@/components/common/QuantitySelector/index.jsx';
+import Seo from '@/components/common/Seo/index.jsx';
 import useCart from '@/hooks/useCart.js';
 import useProducts from '@/hooks/useProducts.js';
 import { sendTelegramCartOrder } from '@/services/api.js';
@@ -15,6 +16,7 @@ import { useWishlistStore } from '@/store/wishlistStore.js';
 import { formatPrice } from '@/utils/formatPrice.js';
 
 const CartPage = () => {
+  const { t } = useTranslation();
   const { data: products = [] } = useProducts();
   const { items, subtotal, delivery, total, updateQuantity, removeItem, clearCart } =
     useCart(products);
@@ -24,30 +26,30 @@ const CartPage = () => {
   const orderMutation = useMutation({
     mutationFn: (orderData) => sendTelegramCartOrder({ cart: items, order: orderData, total }),
     onSuccess: () => {
-      toast.success('Заказ отправлен в Telegram');
+      toast.success(t('toast.telegramCartSent'));
       clearCart();
       setOrderModalOpen(false);
     },
     onError: () => {
-      toast.error('Не удалось отправить заказ. Попробуйте позже.');
+      toast.error(t('toast.telegramCartFailed'));
     }
   });
 
   return (
     <>
-      <Seo title="Корзина | Lumina" />
+      <Seo title={`${t('cartPage.title')} | Lumina`} />
       <div className="container-shell py-8">
-        <Breadcrumbs items={[{ label: 'Главная', to: '/' }, { label: 'Корзина' }]} />
+        <Breadcrumbs items={[{ label: t('common.home'), to: '/' }, { label: t('cartPage.title') }]} />
         <div className="mt-6">
-          <h1 className="section-title">Корзина</h1>
+          <h1 className="section-title">{t('cartPage.title')}</h1>
         </div>
 
         {!items.length ? (
           <div className="mt-8">
             <EmptyState
-              title="В корзине пока пусто"
-              description="Сохраните любимые товары или вернитесь в каталог, чтобы собрать заказ."
-              actionLabel="Перейти в каталог"
+              title={t('cartPage.emptyTitle')}
+              description={t('cartPage.emptyDescription')}
+              actionLabel={t('cartPage.emptyAction')}
             />
           </div>
         ) : (
@@ -66,7 +68,7 @@ const CartPage = () => {
                         {item.product.brand}
                       </div>
                       <div className="mt-2 text-xl font-semibold text-ink dark:text-slate-100">{item.product.name}</div>
-                      <div className="mt-2 text-sm text-roseBrown/70 dark:text-slate-400">Вариант: {item.variant}</div>
+                      <div className="mt-2 text-sm text-roseBrown/70 dark:text-slate-400">{t('common.variant')}: {item.variant}</div>
                       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <QuantitySelector
                           value={item.quantity}
@@ -82,7 +84,7 @@ const CartPage = () => {
                           onClick={() => removeItem(item.productId, item.variant)}
                           className="text-roseBrown/80 transition hover:text-accent"
                         >
-                          Удалить
+                          {t('common.remove')}
                         </button>
                         <button
                           type="button"
@@ -92,7 +94,7 @@ const CartPage = () => {
                           }}
                           className="text-roseBrown/80 transition hover:text-accent"
                         >
-                          Переместить в избранное
+                          {t('cartPage.moveToWishlist')}
                         </button>
                       </div>
                     </div>
@@ -102,33 +104,33 @@ const CartPage = () => {
             </div>
 
             <div className="surface-card p-6">
-              <h2 className="text-2xl font-semibold text-ink dark:text-slate-100">Ваш заказ</h2>
+              <h2 className="text-2xl font-semibold text-ink dark:text-slate-100">{t('cartPage.yourOrder')}</h2>
               <div className="mt-6 space-y-4 text-sm text-roseBrown/80 dark:text-slate-300">
                 <div className="flex items-center justify-between">
-                  <span>Сумма товаров</span>
+                  <span>{t('cartPage.subtotal')}</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Доставка</span>
-                  <span>{delivery ? formatPrice(delivery) : 'Бесплатно'}</span>
+                  <span>{t('cartPage.delivery')}</span>
+                  <span>{delivery ? formatPrice(delivery) : t('cartPage.free')}</span>
                 </div>
                 <div className="flex items-center justify-between border-t border-line pt-4 text-lg font-bold text-ink dark:border-slate-700 dark:text-slate-100">
-                  <span>Итого</span>
+                  <span>{t('cartPage.total')}</span>
                   <span>{formatPrice(total)}</span>
                 </div>
               </div>
               <Button onClick={() => setOrderModalOpen(true)} className="mt-6 w-full">
-                Оформить заказ через Telegram
+                {t('common.telegramOrder')}
               </Button>
 
               <Modal
                 isOpen={isOrderModalOpen}
                 onClose={() => setOrderModalOpen(false)}
-                title="Оформить заказ"
+                title={t('cartPage.orderTitle')}
               >
                 <OrderForm
                   onSubmit={(data) => orderMutation.mutate(data)}
-                  isLoading={orderMutation.isLoading}
+                  isLoading={orderMutation.isPending}
                   onCancel={() => setOrderModalOpen(false)}
                 />
               </Modal>
@@ -143,6 +145,7 @@ const CartPage = () => {
 export default CartPage;
 
 const OrderForm = ({ onSubmit, isLoading, onCancel }) => {
+  const { t } = useTranslation();
   const { register, handleSubmit } = useForm({
     defaultValues: { name: '', phone: '', comment: '' }
   });
@@ -151,26 +154,26 @@ const OrderForm = ({ onSubmit, isLoading, onCancel }) => {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <input
         {...register('name')}
-        placeholder="Ваше имя"
+        placeholder={t('common.yourName')}
         className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
       />
       <input
         {...register('phone')}
-        placeholder="Телефон"
+        placeholder={t('common.phone')}
         className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
       />
       <textarea
         {...register('comment')}
         rows="4"
-        placeholder="Комментарий к заказу"
+        placeholder={t('common.comment')}
         className="focus-ring w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
       />
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button type="submit" className="flex-1" disabled={isLoading}>
-          {isLoading ? 'Отправляется...' : 'Отправить заказ'}
+          {isLoading ? t('productPage.sending') : t('cartPage.sendOrder')}
         </Button>
         <Button type="button" variant="ghost" className="flex-1" onClick={onCancel}>
-          Отмена
+          {t('common.cancel')}
         </Button>
       </div>
     </form>

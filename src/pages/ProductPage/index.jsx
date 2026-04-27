@@ -4,14 +4,15 @@ import { useForm } from 'react-hook-form';
 import { SwiperSlide } from 'swiper/react';
 import { FiHeart, FiShoppingBag } from 'react-icons/fi';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Seo from '@/components/common/Seo/index.jsx';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
 import Button from '@/components/common/Button/index.jsx';
 import Modal from '@/components/common/Modal/index.jsx';
-import Rating from '@/components/product/Rating/index.jsx';
+import Seo from '@/components/common/Seo/index.jsx';
 import ProductCard from '@/components/product/ProductCard/index.jsx';
+import Rating from '@/components/product/Rating/index.jsx';
 import Carousel from '@/components/ui/Carousel/index.jsx';
 import SectionHeading from '@/components/ui/SectionHeading/index.jsx';
 import { fetchProductBySlug, fetchProducts, sendTelegramOrder, submitReview } from '@/services/api.js';
@@ -21,6 +22,7 @@ import { useWishlistStore } from '@/store/wishlistStore.js';
 import { formatPrice } from '@/utils/formatPrice.js';
 
 const ProductPage = () => {
+  const { t } = useTranslation();
   const { slug } = useParams();
   const addItem = useCartStore((state) => state.addItem);
   const toggleWishlist = useWishlistStore((state) => state.toggle);
@@ -53,43 +55,37 @@ const ProductPage = () => {
   const mutation = useMutation({
     mutationFn: (review) => submitReview({ productId: product?.id, review }),
     onSuccess: async () => {
-      toast.success('Отзыв опубликован');
+      toast.success(t('toast.reviewPublished'));
       reset();
       await queryClient.invalidateQueries({ queryKey: queryKeys.product(slug) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.products });
     },
     onError: () => {
-      toast.error('Не удалось отправить отзыв. Попробуйте позже.');
+      toast.error(t('toast.reviewFailed'));
     }
   });
 
   const orderMutation = useMutation({
     mutationFn: (values) => sendTelegramOrder({ product, variant: currentVariant, order: values }),
     onSuccess: () => {
-      toast.success('Заявка отправлена в Telegram');
+      toast.success(t('toast.telegramRequestSent'));
       resetOrder();
       setTelegramModalOpen(false);
     },
     onError: () => {
-      toast.error('Не удалось отправить заявку. Попробуйте позже.');
+      toast.error(t('toast.telegramRequestFailed'));
     }
   });
 
-  const relatedProducts = useMemo(
-    () => {
-      if (!product?.relatedIds?.length) return [];
-      return products.filter((item) => product.relatedIds.includes(item.id));
-    },
-    [product, products]
-  );
+  const relatedProducts = useMemo(() => {
+    if (!product?.relatedIds?.length) return [];
+    return products.filter((item) => product.relatedIds.includes(item.id));
+  }, [product, products]);
 
-  const bundleProducts = useMemo(
-    () => {
-      if (!product?.bundleIds?.length) return [];
-      return products.filter((item) => product.bundleIds.includes(item.id));
-    },
-    [product, products]
-  );
+  const bundleProducts = useMemo(() => {
+    if (!product?.bundleIds?.length) return [];
+    return products.filter((item) => product.bundleIds.includes(item.id));
+  }, [product, products]);
 
   if (!product) {
     return null;
@@ -103,8 +99,8 @@ const ProductPage = () => {
       <div className="container-shell py-8">
         <Breadcrumbs
           items={[
-            { label: 'Главная', to: '/' },
-            { label: 'Каталог', to: '/catalog' },
+            { label: t('common.home'), to: '/' },
+            { label: t('common.catalog'), to: '/catalog' },
             { label: product.name }
           ]}
         />
@@ -154,7 +150,7 @@ const ProductPage = () => {
               ) : null}
             </div>
             <div className="mt-6">
-              <div className="mb-3 text-sm font-semibold text-ink dark:text-slate-100">Выберите вариант</div>
+              <div className="mb-3 text-sm font-semibold text-ink dark:text-slate-100">{t('common.chooseVariant')}</div>
               <div className="flex flex-wrap gap-2">
                 {(product.variants || []).map((variant) => (
                   <button
@@ -173,7 +169,7 @@ const ProductPage = () => {
               </div>
             </div>
             <div className="mt-5 text-sm text-roseBrown/80 dark:text-slate-300">
-              {product.inStock ? 'В наличии и готов к отправке' : 'Временно отсутствует'}
+              {product.inStock ? t('common.available') : t('common.unavailable')}
             </div>
             <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Button
@@ -182,7 +178,7 @@ const ProductPage = () => {
                 onClick={() => addItem(product, currentVariant)}
                 icon={<FiShoppingBag />}
               >
-                В корзину
+                {t('common.addToCart')}
               </Button>
               <Button
                 type="button"
@@ -190,7 +186,7 @@ const ProductPage = () => {
                 className="w-full"
                 onClick={() => setTelegramModalOpen(true)}
               >
-                Заказать через Telegram
+                {t('common.telegramOrder')}
               </Button>
               <Button
                 type="button"
@@ -199,7 +195,7 @@ const ProductPage = () => {
                 onClick={() => toggleWishlist(product.id)}
                 icon={<FiHeart className={wishlistIds.includes(product.id) ? 'fill-current' : ''} />}
               >
-                В избранное
+                {t('common.addToWishlist')}
               </Button>
             </div>
             <Modal
@@ -217,7 +213,7 @@ const ProductPage = () => {
             <Modal
               isOpen={isTelegramModalOpen}
               onClose={() => setTelegramModalOpen(false)}
-              title="Заказать через Telegram"
+              title={t('productPage.telegramTitle')}
             >
               <form
                 onSubmit={handleOrderSubmit((values) => orderMutation.mutate(values))}
@@ -225,23 +221,23 @@ const ProductPage = () => {
               >
                 <input
                   {...registerOrder('name')}
-                  placeholder="Ваше имя"
+                  placeholder={t('common.yourName')}
                   className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />
                 <input
                   {...registerOrder('phone')}
-                  placeholder="Телефон"
+                  placeholder={t('common.phone')}
                   className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />
                 <textarea
                   {...registerOrder('comment')}
                   rows="4"
-                  placeholder="Комментарий к заказу"
+                  placeholder={t('common.comment')}
                   className="focus-ring w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <Button type="submit" className="w-full" disabled={orderMutation.isLoading}>
-                    {orderMutation.isLoading ? 'Отправляется...' : 'Отправить заявку'}
+                  <Button type="submit" className="w-full" disabled={orderMutation.isPending}>
+                    {orderMutation.isPending ? t('productPage.sending') : t('productPage.sendRequest')}
                   </Button>
                   <Button
                     type="button"
@@ -249,7 +245,7 @@ const ProductPage = () => {
                     className="w-full"
                     onClick={() => setTelegramModalOpen(false)}
                   >
-                    Отмена
+                    {t('common.cancel')}
                   </Button>
                 </div>
               </form>
@@ -260,7 +256,7 @@ const ProductPage = () => {
         <div className="mt-16">
           <TabGroup>
             <TabList className="flex flex-wrap gap-3">
-              {['Описание', 'Состав', 'Отзывы'].map((tab) => (
+              {[t('common.descriptionTab'), t('common.compositionTab'), t('common.reviewsTab')].map((tab) => (
                 <Tab
                   key={tab}
                   className="rounded-full border border-line bg-white px-5 py-3 text-sm font-semibold text-ink ui-selected:border-accent ui-selected:bg-accent ui-selected:text-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
@@ -299,15 +295,14 @@ const ProductPage = () => {
                   </div>
                   <form
                     onSubmit={handleSubmit((values) => {
-                      if (!product) return;
                       mutation.mutate(values);
                     })}
                     className="space-y-4 rounded-[1.5rem] border border-line p-5 dark:border-slate-700"
                   >
-                    <h3 className="text-xl font-semibold text-ink dark:text-slate-100">Добавить отзыв</h3>
+                    <h3 className="text-xl font-semibold text-ink dark:text-slate-100">{t('common.addReview')}</h3>
                     <input
                       {...register('author')}
-                      placeholder="Ваше имя"
+                      placeholder={t('common.yourName')}
                       className="focus-ring h-12 w-full rounded-2xl border border-line bg-white px-4 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     />
                     <select
@@ -316,18 +311,18 @@ const ProductPage = () => {
                     >
                       {[5, 4, 3, 2, 1].map((value) => (
                         <option key={value} value={value}>
-                          {value} звезд
+                          {value} {t('common.stars')}
                         </option>
                       ))}
                     </select>
                     <textarea
                       {...register('text')}
                       rows="5"
-                      placeholder="Поделитесь впечатлениями"
+                      placeholder={t('common.shareReview')}
                       className="focus-ring w-full rounded-2xl border border-line bg-white px-4 py-3 text-ink dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     />
-                    <Button type="submit" className="w-full" disabled={mutation.isLoading}>
-                      {mutation.isLoading ? 'Отправка...' : 'Отправить отзыв'}
+                    <Button type="submit" className="w-full" disabled={mutation.isPending}>
+                      {mutation.isPending ? t('productPage.reviewSending') : t('productPage.sendReview')}
                     </Button>
                   </form>
                 </div>
@@ -337,7 +332,7 @@ const ProductPage = () => {
         </div>
 
         <div className="mt-16">
-          <SectionHeading eyebrow="С этим товаром покупают" title="Готовый набор к вашему выбору" />
+          <SectionHeading eyebrow={t('productPage.bundleEyebrow')} title={t('productPage.bundleTitle')} />
           <div className="mt-8">
             <Carousel>
               {bundleProducts.map((item) => (
@@ -350,7 +345,7 @@ const ProductPage = () => {
         </div>
 
         <div className="mt-16">
-          <SectionHeading eyebrow="Похожие товары" title="Еще варианты в похожем настроении" />
+          <SectionHeading eyebrow={t('productPage.relatedEyebrow')} title={t('productPage.relatedTitle')} />
           <div className="mt-8">
             <Carousel>
               {relatedProducts.map((item) => (

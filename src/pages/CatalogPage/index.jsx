@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
-import Seo from '@/components/common/Seo/index.jsx';
+import AnimatedSection from '@/components/ui/AnimatedSection/index.jsx';
 import Breadcrumbs from '@/components/common/Breadcrumbs/index.jsx';
-import ProductQuickView from '@/components/product/ProductQuickView/index.jsx';
+import EmptyState from '@/components/common/EmptyState/index.jsx';
 import ProductCard from '@/components/product/ProductCard/index.jsx';
 import ProductCardSkeleton from '@/components/product/ProductCard/ProductCardSkeleton.jsx';
+import ProductQuickView from '@/components/product/ProductQuickView/index.jsx';
+import Seo from '@/components/common/Seo/index.jsx';
 import FilterSidebar from '@/components/ui/FilterSidebar/index.jsx';
-import AnimatedSection from '@/components/ui/AnimatedSection/index.jsx';
-import EmptyState from '@/components/common/EmptyState/index.jsx';
 import useProducts from '@/hooks/useProducts.js';
 import { useFilterStore } from '@/store/filterStore.js';
 import { filterProducts, sortProducts } from '@/utils/filterProducts.js';
@@ -20,6 +21,7 @@ const formatCategoryLabel = (category) =>
     .join(' ');
 
 const CatalogPage = () => {
+  const { t } = useTranslation();
   const { data: products = [], isLoading } = useProducts();
   const { filters, setFilter } = useFilterStore();
   const [visibleCount, setVisibleCount] = useState(8);
@@ -76,9 +78,9 @@ const CatalogPage = () => {
 
   return (
     <>
-      <Seo title="Каталог | Lumina" description="Каталог косметики, парфюмерии и beauty-товаров Lumina." />
+      <Seo title={`${t('catalogPage.title')} | Lumina`} />
       <div className="container-shell py-8">
-        <Breadcrumbs items={[{ label: 'Главная', to: '/' }, { label: 'Каталог' }]} />
+        <Breadcrumbs items={[{ label: t('common.home'), to: '/' }, { label: t('catalogPage.title') }]} />
 
         <AnimatedSection className="surface-card mt-6 p-8">
           <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
@@ -92,9 +94,9 @@ const CatalogPage = () => {
             <div>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h1 className="section-title">Каталог</h1>
+                  <h1 className="section-title">{t('catalogPage.title')}</h1>
                   <p className="mt-3 text-muted">
-                    {filteredProducts.length} товаров с живыми фильтрами, сортировкой и быстрым просмотром.
+                    {filteredProducts.length} {t('catalogPage.results')}
                   </p>
                 </div>
                 <select
@@ -102,11 +104,11 @@ const CatalogPage = () => {
                   onChange={(event) => setFilter('sortBy', event.target.value)}
                   className="focus-ring h-12 rounded-full border border-line bg-white px-5 text-ink transition hover:border-accent dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 >
-                  <option value="popular">По популярности</option>
-                  <option value="priceAsc">Цена по возрастанию</option>
-                  <option value="priceDesc">Цена по убыванию</option>
-                  <option value="newest">По новизне</option>
-                  <option value="rating">По рейтингу</option>
+                  <option value="popular">{t('catalogPage.sortPopular')}</option>
+                  <option value="priceAsc">{t('catalogPage.sortPriceAsc')}</option>
+                  <option value="priceDesc">{t('catalogPage.sortPriceDesc')}</option>
+                  <option value="newest">{t('catalogPage.sortNewest')}</option>
+                  <option value="rating">{t('catalogPage.sortRating')}</option>
                 </select>
               </div>
 
@@ -118,8 +120,8 @@ const CatalogPage = () => {
                 ) : filteredProducts.length === 0 ? (
                   <div className="col-span-full">
                     <EmptyState
-                      title="Товаров пока нет"
-                      description="Обновляем каталог, загляните позже"
+                      title={t('catalogPage.emptyTitle')}
+                      description={t('catalogPage.emptyDescription')}
                     />
                   </div>
                 ) : (
